@@ -736,7 +736,6 @@ router.post("/selesaikanProgram", (req, res) => {
       return res.status(500).json({ success: false, message: "DB Error" });
     }
 
-    // kirim email ke semua mitra yang terkait program ini
     (async () => {
       try {
         const rows = await new Promise((resolve, reject) => {
@@ -809,7 +808,146 @@ router.post("/selesaikanProgram", (req, res) => {
     res.json({ success: true, message: "Program berhasil diselesaikan" });
   });
 });
+// EDIT PENGAJUAN - UPDATE JUMLAH AMBIL (FIXED)
+router.post('/editPengajuan', async (req, res) => {
+  try {
+    const { id, jumlah_ambil } = req.body;
+    const userId = req.user && (req.user.id || req.user._id) ? (req.user.id || req.user._id) : null;
 
+    if (!id) return res.status(400).json({ success: false, message: 'ID pengajuan dibutuhkan' });
+    const newJumlah = Number(jumlah_ambil ?? 0);
+    if (!newJumlah || newJumlah <= 0) return res.status(400).json({ success: false, message: 'Jumlah ambil harus > 0' });
+
+    // ambil pengajuan dulu
+    const pengRows = await new Promise((resolve, reject) => {
+      db.query('SELECT id, jumlah_ambil, status_pengajuan, catatan_admin, kegiatan_id FROM kegiatan_mitra_fm WHERE id = ? LIMIT 1', [id], (e, r) => e ? reject(e) : resolve(r));
+    });
+    if (!pengRows || pengRows.length === 0) return res.status(404).json({ success: false, message: 'Pengajuan tidak ditemukan' });
+
+    const peng = pengRows[0];
+
+    // Validasi jumlah ambil tidak melebihi jumlah tersedia (hanya untuk informasi)
+    const programRows = await new Promise((resolve, reject) => {
+      db.query('SELECT jumlah_sisa FROM force_majeure WHERE id = ?', [peng.kegiatan_id], (e, r) => e ? reject(e) : resolve(r));
+    });
+    
+    if (programRows && programRows.length > 0) {
+      const jumlahSisa = programRows[0].jumlah_sisa;
+      const jumlahTersedia = jumlahSisa + peng.jumlah_ambil; // Kembalikan jumlah lama + sisa
+      
+      if (newJumlah > jumlahTersedia) {
+        return res.status(400).json({ 
+          success: false, 
+          message: `Jumlah ambil (${newJumlah}) melebihi jumlah tersedia (${jumlahTersedia})` 
+        });
+      }
+    }
+
+    // Tentukan status dan catatan baru
+    let newStatus = peng.status_pengajuan;
+    let newCatatan = peng.catatan_admin; // Default: tetap pakai catatan lama
+
+    // Jika status saat ini adalah ditolak (3), ubah menjadi proses (1) dan reset catatan
+    if (peng.status_pengajuan === 3) {
+      newStatus = 1; // Reset dari ditolak menjadi proses
+      newCatatan = "Menunggu persetujuan admin"; // Reset catatan
+    }
+
+    // jika jumlah sama dengan yang lama dan status tidak berubah, kembalikan tanpa update
+    const oldJumlah = Number(peng.jumlah_ambil ?? 0);
+    
+    if (oldJumlah === newJumlah && newStatus === peng.status_pengajuan) {
+      return res.json({ success: true, message: 'Tidak ada perubahan', data: { id: peng.id, jumlah_ambil: oldJumlah } });
+    }
+
+    // update di tabel kegiatan_mitra_fm
+    await new Promise((resolve, reject) => {
+      db.query(
+        `UPDATE kegiatan_mitra_fm
+         SET jumlah_ambil = ?, 
+             catatan_admin = ?, 
+             status_pengajuan = ?,
+             editedAt = NOW(), 
+             editedBy = ?
+         WHERE id = ?`,
+        [newJumlah, newCatatan, newStatus, userId, id],
+        (e, r) => e ? reject(e) : resolve(r)
+      );
+    });
+
+    // ambil kembali baris yang sudah diupdate
+    const updatedRows = await new Promise((resolve, reject) => {
+      db.query('SELECT id, jumlah_ambil, catatan_admin, status_pengajuan FROM kegiatan_mitra_fm WHERE id = ? LIMIT 1', [id], (e, r) => e ? reject(e) : resolve(r));
+    });
+
+    const responseMessage = newStatus !== peng.status_pengajuan 
+      ? 'Jumlah pengambilan berhasil diperbarui dan status direset menjadi proses' 
+      : 'Jumlah pengambilan berhasil diperbarui';
+
+    return res.json({ 
+      success: true, 
+      message: responseMessage, 
+      data: updatedRows[0] 
+    });
+
+  } catch (err) {
+    console.error('editPengajuan ERROR:', err);
+    return res.status(500).json({ 
+      success: false, 
+      message: 'Server Error', 
+      error: err && err.message ? err.message : err 
+    });
+  }
+});
+
+// HAPUS PENGAJUAN
+router.post('/removeData', (req, res) => {
+  const { id } = req.body;
+
+  if (!id) {
+      return res.status(400).json({ success: false, message: "ID tidak boleh kosong" });
+  }
+
+  // Ambil data pengajuan untuk mengembalikan jumlah sisa
+  const getPengajuanSql = `SELECT kegiatan_id, jumlah_ambil FROM kegiatan_mitra_fm WHERE id = ?`;
+  
+  db.query(getPengajuanSql, [id], (err, results) => {
+      if (err) {
+          console.error("❌ DB Error:", err);
+          return res.status(500).json({ success: false, message: "DB Error" });
+      }
+
+      if (results.length === 0) {
+          return res.json({ success: false, message: "Data tidak ditemukan" });
+      }
+
+      const pengajuan = results[0];
+
+      // Kembalikan jumlah sisa ke program
+      const updateProgramSql = `UPDATE force_majeure SET jumlah_sisa = jumlah_sisa + ? WHERE id = ?`;
+      db.query(updateProgramSql, [pengajuan.jumlah_ambil, pengajuan.kegiatan_id], (err2) => {
+          if (err2) {
+              console.error("❌ DB Error:", err2);
+              return res.status(500).json({ success: false, message: "DB Error" });
+          }
+
+          // Hapus pengajuan
+          const deleteSql = `DELETE FROM kegiatan_mitra_fm WHERE id = ?`;
+          db.query(deleteSql, [id], (err3, result) => {
+              if (err3) {
+                  console.error("❌ DB Error:", err3);
+                  return res.status(500).json({ success: false, message: "DB Error" });
+              }
+
+              if (result.affectedRows === 0) {
+                  return res.json({ success: false, message: "Data tidak ditemukan" });
+              }
+
+              res.json({ success: true, message: "Data berhasil dihapus" });
+          });
+      });
+  });
+});
 
 
 

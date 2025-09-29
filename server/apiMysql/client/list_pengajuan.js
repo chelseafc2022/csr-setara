@@ -825,7 +825,112 @@ router.post("/selesaikanProgram", (req, res) => {
     }
   });
 });
+// POST /editPengajuan — update kegiatan_mitra.jumlah_ambil dan reset status jika ditolak
+router.post('/editPengajuan', async (req, res) => {
+  try {
+    const { id, jumlah_ambil } = req.body; // Hapus catatan_admin dari parameter
+    const userId = req.user && (req.user.id || req.user._id) ? (req.user.id || req.user._id) : null;
 
+    if (!id) return res.status(400).json({ success: false, message: 'ID pengajuan dibutuhkan' });
+    const newJumlah = Number(jumlah_ambil ?? 0);
+    if (!newJumlah || newJumlah <= 0) return res.status(400).json({ success: false, message: 'Jumlah ambil harus > 0' });
+
+    // ambil pengajuan dulu
+    const pengRows = await new Promise((resolve, reject) => {
+      db.query('SELECT id, jumlah_ambil, status_pengajuan, catatan_admin FROM kegiatan_mitra WHERE id = ? LIMIT 1', [id], (e, r) => e ? reject(e) : resolve(r));
+    });
+    if (!pengRows || pengRows.length === 0) return res.status(404).json({ success: false, message: 'Pengajuan tidak ditemukan' });
+
+    const peng = pengRows[0];
+
+    // Tentukan status dan catatan baru
+    let newStatus = peng.status_pengajuan;
+    let newCatatan = peng.catatan_admin; // Default: tetap pakai catatan lama
+
+    // Jika status saat ini adalah ditolak (3), ubah menjadi proses (1) dan reset catatan
+    if (peng.status_pengajuan === 3) {
+      newStatus = 1; // Reset dari ditolak menjadi proses
+      newCatatan = "Menunggu persetujuan admin"; // Reset catatan
+    }
+
+    // jika jumlah sama dengan yang lama dan status tidak berubah, kembalikan tanpa update
+    const oldJumlah = Number(peng.jumlah_ambil ?? 0);
+    
+    if (oldJumlah === newJumlah && newStatus === peng.status_pengajuan) {
+      return res.json({ success: true, message: 'Tidak ada perubahan', data: { id: peng.id, jumlah_ambil: oldJumlah } });
+    }
+
+    // update di tabel kegiatan_mitra
+    await new Promise((resolve, reject) => {
+      db.query(
+        `UPDATE kegiatan_mitra
+         SET jumlah_ambil = ?, 
+             catatan_admin = ?, 
+             status_pengajuan = ?,
+             editedAt = NOW(), 
+             editedBy = ?
+         WHERE id = ?`,
+        [newJumlah, newCatatan, newStatus, userId, id],
+        (e, r) => e ? reject(e) : resolve(r)
+      );
+    });
+
+    // ambil kembali baris yang sudah diupdate
+    const updatedRows = await new Promise((resolve, reject) => {
+      db.query('SELECT id, jumlah_ambil, catatan_admin, status_pengajuan FROM kegiatan_mitra WHERE id = ? LIMIT 1', [id], (e, r) => e ? reject(e) : resolve(r));
+    });
+
+    const responseMessage = newStatus !== peng.status_pengajuan 
+      ? 'Jumlah pengambilan berhasil diperbarui dan status direset menjadi proses' 
+      : 'Jumlah pengambilan berhasil diperbarui';
+
+    return res.json({ 
+      success: true, 
+      message: responseMessage, 
+      data: updatedRows[0] 
+    });
+
+  } catch (err) {
+    console.error('editPengajuan ERROR:', err);
+    return res.status(500).json({ 
+      success: false, 
+      message: 'Server Error', 
+      error: err && err.message ? err.message : err 
+    });
+  }
+});
+
+router.post('/removeData', async (req, res) => {
+  try {
+    const { id } = req.body;
+
+    if (!id) {
+      return res.status(400).json({ success: false, message: 'ID pengajuan dibutuhkan' });
+    }
+
+    // Langsung hapus data pengajuan dari kegiatan_mitra
+    const deleteResult = await new Promise((resolve, reject) => {
+      db.query('DELETE FROM kegiatan_mitra WHERE id = ?', [id], (e, r) => e ? reject(e) : resolve(r));
+    });
+
+    if (deleteResult.affectedRows === 0) {
+      return res.status(500).json({ success: false, message: 'Gagal menghapus data pengajuan' });
+    }
+
+    return res.json({ 
+      success: true, 
+      message: 'Pengajuan berhasil dihapus' 
+    });
+
+  } catch (err) {
+    console.error('removeData ERROR:', err);
+    return res.status(500).json({ 
+      success: false, 
+      message: 'Server Error', 
+      error: err && err.message ? err.message : err 
+    });
+  }
+});
 
 
 module.exports = router;
