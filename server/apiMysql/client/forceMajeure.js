@@ -395,9 +395,6 @@ router.post('/editData', uploadFields, (req, res) => {
   });
   
 
-
-
-// 📌 Mitra mengajukan pengambilan program
 router.post("/addPengajuan", (req, res) => {
   try {
     const id = uniqid();
@@ -410,7 +407,7 @@ router.post("/addPengajuan", (req, res) => {
       return res.status(400).json({ success: false, message: "Data tidak lengkap" });
     }
 
-    // Insert ke kegiatan_mitra, status_pengajuan = 1 (menunggu persetujuan)
+
     let insert = `
       INSERT INTO kegiatan_mitra_fm
       (id, kegiatan_id, perusahaan_id, jumlah_ambil, catatan_mitra, status_pengajuan, catatan_admin, createdBy, createdAt, editedBy, editedAt)
@@ -437,6 +434,161 @@ router.post("/addPengajuan", (req, res) => {
         console.error("❌ DB Insert Error:", err.sqlMessage);
         return res.status(500).json({ success: false, message: "DB Error", error: err });
       }
+
+      (async () => {
+        try {
+          const progRows = await new Promise((resolve, reject) => {
+            db.query('SELECT id, nama_csr FROM force_majeure WHERE id = ?', [kegiatan_id], (e, r) => e ? reject(e) : resolve(r));
+          });
+          const program = progRows[0] || { nama_csr: 'Program Force Majeure' };
+
+          const mitraRows = await new Promise((resolve, reject) => {
+            db.query(`
+              SELECT u.nama AS nama_pj, u.email AS email_pj, p.nama AS nama_perusahaan, p.email AS email_perusahaan
+              FROM users u
+              LEFT JOIN perusahaan p ON u.id = p.users_id
+              WHERE p.users_id = ? OR u.id = ?
+              LIMIT 1
+            `, [perusahaan_id, perusahaan_id], (e, r) => e ? reject(e) : resolve(r));
+          });
+          const mitra = mitraRows[0] || {};
+
+          const emailMitra = mitra.email_perusahaan || mitra.email_pj || null;
+          const adminEmails = process.env.NOTIF_TO || 'csrsetarakonsel@gmail.com';
+          const pengajuanId = id;
+          const tgl = new Date().toLocaleString();
+
+          const adminBase = (process.env.ADMIN_URL || 'http://localhost:3000').replace(/\/$/, '');
+          const adminLink = `${adminBase}/#/forceMajeure`;
+
+          const safeProgram = escapeHtml(program.nama_csr || '');
+          const safePerusahaan = escapeHtml(mitra.nama_perusahaan || '-');
+          const safeNamaPJ = escapeHtml(mitra.nama_pj || '-');
+          const safeEmailPJ = escapeHtml(mitra.email_perusahaan || '-') ;
+          const safeJumlah = escapeHtml(String(jumlah_ambil));
+          const safeCatatan = escapeHtml(catatan_mitra ?? '-');
+
+          // HTML ke admin
+          const subjectAdmin = `[CSR-SETARA] Pengajuan Baru (FORCE MAJEURE - KEBENCANAAN) - ${safeProgram} - ID ${pengajuanId}`;
+          const htmlAdmin = `
+  <!doctype html>
+  <html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Notifikasi Pengajuan</title>
+  </head>
+  <body style="font-family: Arial, Helvetica, sans-serif; margin:0; padding:0; color:#222;">
+    <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+      <tr>
+        <td align="center" style="padding:20px;">
+          <table width="600" cellpadding="0" cellspacing="0" role="presentation" style="border:1px solid #e6e6e6; border-radius:8px; overflow:hidden;">
+            <tr style="background:#0d6efd; color:white;">
+              <td style="padding:18px 24px;">
+                <h2 style="margin:0; font-size:18px;">CSR-SETARA KONSEL — Notifikasi Pengajuan</h2>
+                <p style="margin:6px 0 0; font-size:13px; opacity:0.95;">Ada pengajuan baru yang menunggu verifikasi</p>
+              </td>
+            </tr>
+
+            <tr>
+              <td style="padding:20px;">
+                <p style="margin:0 0 12px;">Halo Admin,</p>
+
+                <table cellpadding="0" cellspacing="0" role="presentation" style="width:100%; margin-bottom:14px;">
+                  <tr><td style="padding:6px 0;"><strong>ID:</strong></td><td style="padding:6px 0;">${escapeHtml(pengajuanId)}</td></tr>
+                  <tr><td style="padding:6px 0;"><strong>Program:</strong></td><td style="padding:6px 0;">${safeProgram}</td></tr>
+                  <tr><td style="padding:6px 0;"><strong>Perusahaan:</strong></td><td style="padding:6px 0;">${safePerusahaan}</td></tr>
+                  <tr><td style="padding:6px 0;"><strong>Penanggung Jawab:</strong></td><td style="padding:6px 0;">${safeNamaPJ}</td></tr>
+                  <tr><td style="padding:6px 0;"><strong>Email PJ:</strong></td><td style="padding:6px 0;"><a href="mailto:${safeEmailPJ}">${safeEmailPJ}</a></td></tr>
+                  <tr><td style="padding:6px 0;"><strong>Jumlah:</strong></td><td style="padding:6px 0;">${safeJumlah}</td></tr>
+                  <tr><td style="padding:6px 0;"><strong>Catatan:</strong></td><td style="padding:6px 0;">${safeCatatan}</td></tr>
+                  <tr><td style="padding:6px 0;"><strong>Tanggal:</strong></td><td style="padding:6px 0;">${escapeHtml(tgl)}</td></tr>
+                </table>
+
+                <p style="margin:18px 0;">
+                  <a href="${adminLink}" style="display:inline-block; padding:10px 16px; background:#0d6efd; color:white; text-decoration:none; border-radius:6px; font-weight:600;">Buka Panel Pengajuan</a>
+                </p>
+
+                <hr style="border:none; border-top:1px solid #eee; margin:18px 0;">
+
+                <p style="margin:0; color:#666; font-size:13px;">
+                  Jika Anda ingin membalas langsung ke mitra, klik <em>Reply</em> — reply akan menuju ke ${safeEmailPJ}.
+                </p>
+              </td>
+            </tr>
+
+            <tr>
+              <td style="background:#f8f9fb; padding:12px 20px; font-size:12px; color:#666;">
+                CSR-SETARA • Kabupaten Konawe Selatan
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+  </html>
+  `;
+
+          sendMail({ to: adminEmails, subject: subjectAdmin, html: htmlAdmin, replyTo: emailMitra || undefined })
+            .then(info => console.log('✅ Email notifikasi FM ke admin terkirim:', info.messageId || info.accepted || 'ok'))
+            .catch(err => console.error('❌ Gagal kirim email ke admin (FM):', err && err.message ? err.message : err));
+
+          // Email konfirmasi ke mitra (jika ada)
+          if (emailMitra) {
+            const subjectMitra = `Konfirmasi Pengajuan - ${safeProgram} - ID ${pengajuanId}`;
+            const htmlMitra = `
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="font-family: Arial, Helvetica, sans-serif; margin:0; padding:0; color:#222;">
+  <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+    <tr>
+      <td align="center" style="padding:20px;">
+        <table width="560" cellpadding="0" cellspacing="0" role="presentation" style="border:1px solid #eee; border-radius:8px;">
+          <tr style="background:#f5f7fa;"><td style="padding:16px 20px;">
+            <h3 style="margin:0; font-size:16px;">Terima kasih — Pengajuan Anda telah diterima</h3>
+          </td></tr>
+
+          <tr><td style="padding:18px 20px;">
+            <p style="margin:0 0 12px;">Halo ${safeNamaPJ} dari ${safePerusahaan},</p>
+            <p style="margin:0 0 14px;">Kami telah menerima pengajuan Anda. Berikut ringkasan pengajuan:</p>
+
+            <ul style="margin:0 0 14px; padding-left:18px; color:#333;">
+              <li><strong>ID:</strong> ${escapeHtml(pengajuanId)}</li>
+              <li><strong>Program:</strong> ${safeProgram}</li>
+              <li><strong>Jumlah:</strong> ${safeJumlah}</li>
+              <li><strong>Status:</strong> Menunggu verifikasi admin</li>
+            </ul>
+
+            <p style="margin:0 0 14px; color:#555;">Estimasi proses: 1–3 hari kerja. Jika perlu info lebih lanjut, balas email ini atau hubungi admin di <a href="mailto:${escapeHtml(adminEmails)}">${escapeHtml(adminEmails)}</a>.</p>
+
+            <p style="margin:18px 0;">
+              <a href="${adminLink}" style="display:inline-block; padding:10px 14px; background:#0d6efd; color:#fff; text-decoration:none; border-radius:6px;">Lihat Status Pengajuan</a>
+            </p>
+
+            <p style="margin:18px 0 0; font-size:12px; color:#999;">Catatan: Email ini hanya konfirmasi penerimaan pengajuan. Admin akan menghubungi Anda jika diperlukan.</p>
+          </td></tr>
+
+          <tr><td style="padding:10px 18px; background:#fafafa; font-size:12px; color:#777;">CSR-SETARA KONSEL</td></tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+`;
+            sendMail({ to: emailMitra, subject: subjectMitra, html: htmlMitra })
+              .then(info => console.log('✅ Email konfirmasi FM ke mitra terkirim'))
+              .catch(err => console.error('❌ Gagal kirim konfirmasi FM ke mitra:', err && err.message ? err.message : err));
+          } else {
+            console.log('⚠️ Mitra tidak memiliki email, melewatkan konfirmasi ke mitra.');
+          }
+
+        } catch (fetchErr) {
+          console.error('❌ Gagal ambil data untuk email (FM):', fetchErr && fetchErr.message ? fetchErr.message : fetchErr);
+        }
+      })();
 
 
       // Tidak update jumlah_sisa dan status program di sini
