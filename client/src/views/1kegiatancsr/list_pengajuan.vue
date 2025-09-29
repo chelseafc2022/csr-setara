@@ -78,12 +78,11 @@
                     <th width="5%" class="text-center">No</th>
                     <th width="5%">Status</th>
                     <th width="20%">Nama Program</th>
-                    <th width="10%">Kecamatan</th>
                     <th width="5%">Tanggal Pengajuan</th>
                     <th width="15%">Mitra/Perusahaan</th>
                     <th width="5%">Jumlah Pengambilan</th>
                     <th width="5%">Tersedia</th>
-                    <th width="30%" class="text-center">Act</th>
+                    <th width="40%" class="text-center">Act</th>
                     <!-- <th width="30%">Keterangan</th> -->
                     <!-- <th width="10%"></th> -->
                 </tr>
@@ -107,12 +106,7 @@
                         </div>
                     </td>
 
-                    <td>
-                        <div>{{ data.nama_kecamatan }}</div>
-                        <div class="text-blue text-bold" style="font-size: 12px;">
-                            {{ data.nama_desa }}
-                        </div>
-                    </td>
+                   
 
 
                     <td>{{ UMUM.tglConvert(data.tgl_pengajuan) }} </td>
@@ -126,17 +120,34 @@
                     <td :style="{ backgroundColor: data.jumlah_sisa === 0 ? '#ffcccc' : 'transparent' }">
                         {{ data.jumlah_sisa }} {{ data.satuan }}
                     </td>
-                    <td class="text-center q-gutter-sm">
+                    <td class="text-center">
+                        <q-btn-group>
                         <!-- Tombol Lihat Detil -->
-                        <q-btn glossy color="blue" label="Lihat Detil" size="sm"
+                        <q-btn class="tbl_btn"  glossy color="blue" icon="visibility" 
                             @click="selectData(data); mdl_lihat = true">
                             <q-tooltip content-class="bg-blue-9" content-style="font-size: 13px">
                                 Lihat Detil
                             </q-tooltip>
                         </q-btn>
 
+                        <q-btn class="tbl_btn"  v-if="tipe === 4" glossy color="orange" icon="edit" 
+                            :disable="data.status_pengajuan == 2 || data.jumlah_sisa === 0 || data.jumlah_ambil > data.jumlah_sisa"
+                            @click="openEdit(data)">
+                            <q-tooltip content-class="bg-orange-9" content-style="font-size: 13px">
+                                Edit Pengambilan
+                            </q-tooltip>
+                        </q-btn>
+
+                        <!-- Tombol Hapus -->
+                        <q-btn class="tbl_btn"  v-if="tipe === 4" glossy color="red" icon="delete" 
+                            :disable="data.status_pengajuan == 2" @click="openDeleteModal(data)">
+                            <q-tooltip content-class="bg-red-9" content-style="font-size: 13px">
+                                Hapus Pengajuan
+                            </q-tooltip>
+                        </q-btn>
+
                         <!-- Tombol Setujui -->
-                        <q-btn v-if="tipe === 1 || tipe === 5" glossy color="green" label="Setujui" size="sm"
+                        <q-btn class="tbl_btn"  v-if="tipe === 1 || tipe === 5" glossy color="green" icon="check"
                             :disable="data.status_pengajuan == 2 || data.status_pengajuan == 3 || data.jumlah_sisa === 0 || data.jumlah_ambil > data.jumlah_sisa"
                             @click="approvePengajuan(data.id)">
                             <q-tooltip content-class="bg-green-9" content-style="font-size: 13px">
@@ -145,7 +156,7 @@
                         </q-btn>
 
                         <!-- Tombol Tolak -->
-                        <q-btn v-if="tipe === 1 || tipe === 5" glossy color="red" label="Tolak" size="sm"
+                        <q-btn class="tbl_btn"  v-if="tipe === 1 || tipe === 5" glossy color="red" icon="block" 
                             :disable="data.status_pengajuan == 2 || data.status_pengajuan == 3"
                             @click="tolakPengajuan(data.id)">
                             <q-tooltip content-class="bg-red-9" content-style="font-size: 13px">
@@ -154,20 +165,21 @@
                         </q-btn>
 
                         <!-- Tombol upload bukti -->
-                        <q-btn v-if="tipe === 4 && data.status_pengajuan == 2" glossy color="purple"
-                            label="Upload Eviden" size="sm" @click="openUploadModal(data)">
+                        <q-btn class="tbl_btn" v-if="tipe === 4 && data.status_pengajuan == 2" glossy color="purple"
+                            icon="photo_camera" @click="openUploadModal(data)">
                             <q-tooltip content-class="bg-purple-9" content-style="font-size: 13px">
                                 Upload Bukti Program
                             </q-tooltip>
                         </q-btn>
 
-                        <q-btn v-if="tipe === 1 || tipe === 5 && data.status_pengajuan == 2 && data.jml_eviden > 0"
-                            glossy color="purple" label="Lihat Eviden" size="sm" :disable="data.status_pengajuan == 3"
+                        <q-btn class="tbl_btn"  v-if="tipe === 1 || tipe === 5 && data.status_pengajuan == 2 && data.jml_eviden > 0"
+                            glossy color="purple" icon="photo_camera" :disable="data.status_pengajuan == 3"
                             @click="lihatEviden(data)">
-                            <q-tooltip content-class="bg-blue-9" content-style="font-size: 13px">
+                            <q-tooltip content-class="bg-purple-9" content-style="font-size: 13px">
                                 Lihat Bukti Program
                             </q-tooltip>
                         </q-btn>
+                    </q-btn-group>
 
                     </td>
 
@@ -185,6 +197,50 @@
                 :boundary-links="true" icon-first="skip_previous" icon-last="skip_next" icon-prev="fast_rewind"
                 icon-next="fast_forward" @input="getView" />
         </div>
+
+
+        <!-- ===================== MODAL EDIT ===================== -->
+        <q-dialog v-model="mdl_edit" persistent>
+            <q-card class="bg-white mdl-md">
+
+                <q-card-section class="row items-center q-pt-sm q-pb-sm bg-orange">
+                    <div class="col">
+                        <div class="text-h6 text-white">Edit Pengajuan — Jumlah Ambil</div>
+                        <!-- <div class="text-subtitle2 text-grey-6">Ubah jumlah pengambilan untuk pengajuan ini</div> -->
+                    </div>
+                    <div class="col-auto">
+                        <q-btn dense flat round icon="close" color="white" @click="mdl_edit = false" />
+                    </div>
+                </q-card-section>
+
+                <!-- Body: mengikuti format "Ambil Program" -->
+                <q-card-section>
+                    <div class="text-subtitle1 text-bold q-mb-sm">⚖️ Jumlah Pengambilan CSR</div>
+
+                    <q-toggle v-model="ambilSemua" label="Mengambil Seluruh Jumlah Kebutuhan CSR" color="amber"
+                        @update:model-value="onToggleSemua" />
+
+                    <q-input v-model.number="jumlahAmbil" type="number" outlined dense class="q-mt-sm"
+                        label="Jumlah yang ingin diambil" :disable="ambilSemua" :max="maxAllowed" :rules="[
+                            val => (val && Number(val) > 0) || 'Minimal 1',
+                            val => (val <= maxAllowed) || `Tidak boleh lebih dari ${maxAllowed}`
+                        ]" />
+
+
+                </q-card-section>
+
+                <!-- Footer: action buttons sama style dengan modal lain (sesuaikan warna jika dibutuhkan) -->
+                <q-card-actions align="right" class="q-pa-sm bg-grey-4">
+                    <q-btn color="negative" label="Batal" v-close-popup />
+                    <q-btn color="orange" unelevated label="Simpan" :loading="loadingEdit" @click="submitEdit" />
+                </q-card-actions>
+            </q-card>
+        </q-dialog>
+
+        <!-- ===================== MODAL EDIT ===================== -->
+
+
+
 
 
         <!-- ===================== MODAL TOLAK ===================== -->
@@ -490,6 +546,28 @@
 
         <!-- ===================== MODAL LIHAT UPLOAD DARI PERUSAHAAN ===================== -->
 
+        <!-- ===================== MODAL HAPUS ===================== -->
+        <q-dialog v-model="mdl_delete" persistent>
+            <q-card class="mdl-sm">
+                <q-card-section class="q-pt-none text-center orageGrad">
+                    <form @submit.prevent="removeData">
+                        <br>
+                        <img src="img/alert.png" alt="" width="75"> <br>
+                        <span class="h_notifikasi">APAKAH ANDA YAKIN INGIN MENGHAPUS DATA INI??</span>
+                        <input type="submit" style="position: absolute; left: -9999px" />
+                        <br>
+                        <br>
+
+                        <q-btn label="Batal" size="sm" color="negative" v-close-popup />
+                        &nbsp;
+                        <q-btn type="submit" label="Hapus" size="sm" color="primary" v-close-popup />
+
+                    </form>
+                </q-card-section>
+            </q-card>
+        </q-dialog>
+        <!-- ===================== MODAL HAPUS ===================== -->
+
 
 
 
@@ -530,7 +608,6 @@ export default {
             selectedProgram: {},
             jumlahAmbil: 0,
             mitra: {},
-            ambilSemua: false,
             catatanAmbil: '',
 
             tipe: null, // simpan tipe user
@@ -619,15 +696,144 @@ export default {
             selectedItemEviden: {
                 keterangan: '',
                 files: []
-            }
+            },
+            selectedPengajuanEdit: null,
+            // --- modal specific ---
+            ambilSemua: false,
+            loadingEdit: false,
 
         }
 
 
     },
+    computed: {
+        // maxAllowed = program.jumlah_sisa + pengajuan.jumlah_ambil (karena pengajuan lama "memesan" jumlah lama)
+        maxAllowed() {
+            if (!this.selectedPengajuanEdit) return 0;
+            // coba ambil field total kebutuhan: 'jumlah' atau fallback ke nama lain jika perlu
+            const totalKebutuhan = Number(
+                this.selectedPengajuanEdit.jumlah ??
+                this.selectedPengajuanEdit.jumlah_kebutuhan ??
+                this.selectedPengajuanEdit.total_kebutuhan ??
+                0
+            );
+            // safety fallback: bila totalKebutuhan 0, gunakan sisa+old (agar tidak 0)
+            if (totalKebutuhan > 0) return totalKebutuhan;
+            const sisa = Number(this.selectedPengajuanEdit.jumlah_sisa ?? 0);
+            const old = Number(this.selectedPengajuanEdit.jumlah_ambil ?? 0);
+            return sisa + old;
+        }
+    },
 
 
     methods: {
+
+        openDeleteModal(item) {
+            this.selectedItem = item;
+            this.mdl_delete = true;
+        },
+
+        // fungsi baru yang dipanggil oleh tombol Edit supaya tidak menggangu modal detail
+        openEdit(row) {
+            // copy agar tidak merubah referensi asli
+            this.selectedPengajuanEdit = Object.assign({}, row);
+
+            // prioritas: jumlah_sisa (available) -> jumlah (total kebutuhan) -> jumlah_ambil (lama)
+            const available = Number(row.jumlah_sisa ?? row.jumlah ?? row.jumlah_ambil ?? 0);
+
+            // isi field jumlahAmbil langsung dengan jumlah tersedia
+            this.jumlahAmbil = available;
+
+            // isi catatan jika ada
+            this.catatanAmbil = row.catatan_admin ?? '';
+
+            // total kebutuhan (jika tersedia)
+            const total = Number(row.jumlah ?? row.jumlah_kebutuhan ?? row.total_kebutuhan ?? 0);
+
+            // jika jumlahAmbil sudah sama dengan total, set toggle ON
+            this.ambilSemua = (total > 0 && this.jumlahAmbil === total);
+
+            // buka modal edit
+            this.mdl_edit = true;
+        },
+        onToggleSemua(val) {
+            if (!this.selectedPengajuanEdit) return;
+
+            const totalKebutuhan = Number(
+                this.selectedPengajuanEdit.jumlah ??
+                this.selectedPengajuanEdit.jumlah_kebutuhan ??
+                this.selectedPengajuanEdit.total_kebutuhan ??
+                0
+            );
+
+            if (val) {
+                // set ke total kebutuhan (1000) — sesuai request Anda
+                // input sudah memiliki :disable="ambilSemua", jadi otomatis tidak dapat diedit
+                this.jumlahAmbil = totalKebutuhan > 0 ? totalKebutuhan : this.maxAllowed;
+            } else {
+                // kembalikan ke jumlah lama
+                this.jumlahAmbil = Number(this.selectedPengajuanEdit.jumlah_ambil ?? 0);
+            }
+        },
+        async submitEdit() {
+            if (!this.selectedPengajuanEdit) return
+            const newJumlah = Number(this.jumlahAmbil ?? 0)
+            if (!newJumlah || newJumlah <= 0) {
+                this.$q.notify({ type: 'negative', message: 'Jumlah harus minimal 1' })
+                return
+            }
+            if (newJumlah > this.maxAllowed) {
+                this.$q.notify({ type: 'negative', message: `Tidak boleh lebih dari ${this.maxAllowed}` })
+                return
+            }
+
+            this.loadingEdit = true
+            try {
+                const base = this.$store.state.url.LIST_PENGAJUAN || this.$store.state.url // fallback
+                const endpoint = base.endsWith('/') ? base + 'editPengajuan' : base + '/editPengajuan'
+                const token = localStorage.token || ''
+
+                const payload = {
+                    id: this.selectedPengajuanEdit.id,
+                    jumlah_ambil: newJumlah,
+                }
+
+                const resp = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'authorization': 'kikensbatara ' + token
+                    },
+                    body: JSON.stringify(payload)
+                })
+
+                const resJson = await resp.json().catch(() => null)
+
+                if (!resp.ok) {
+                    const msg = (resJson && resJson.message) ? resJson.message : `Server error (${resp.status})`
+                    this.$q.notify({ type: 'negative', message: msg })
+                    return
+                }
+
+                if (resJson && resJson.success) {
+                    this.$q.notify({ type: 'positive', message: resJson.message || 'Berhasil diubah' })
+
+
+                    this.getView();
+
+                    this.mdl_edit = false
+                } else {
+                    const msg = (resJson && resJson.message) ? resJson.message : 'Gagal menyimpan perubahan'
+                    this.$q.notify({ type: 'negative', message: msg })
+                }
+
+            } catch (err) {
+                console.error('submitEdit error', err)
+                this.$q.notify({ type: 'negative', message: 'Kesalahan jaringan / server' })
+            } finally {
+                this.loadingEdit = false
+            }
+        },
 
         async lihatEviden(item) {
             const res = await fetch(this.$store.state.url.LIST_PENGAJUAN + 'getEviden?id=' + item.id, {
@@ -821,6 +1027,45 @@ export default {
                 console.error(err);
                 this.Notify('Terjadi kesalahan server', 'negative', 'error_outline');
             }
+        },
+
+        removeData: function () {
+            if (!this.selectedItem.id) {
+                this.Notify("ID data tidak ditemukan", "negative", "error_outline");
+                return;
+            }
+
+            const base = this.$store.state.url.LIST_PENGAJUAN || '';
+            const url = base.replace(/\/?$/, '/') + 'removeData';
+
+            const payload = { id: this.selectedItem.id };
+
+            fetch(url, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "kikensbatara " + localStorage.token
+                },
+                body: JSON.stringify(payload),
+            })
+                .then(async (res) => {
+                    const text = await res.text();
+                    let data; try { data = text ? JSON.parse(text) : {}; } catch { data = { message: text }; }
+                    if (!res.ok) throw new Error(data?.message || `HTTP ${res.status}`);
+                    return data;
+                })
+                .then((res_data) => {
+                    if (res_data?.success) {
+                        this.Notify(res_data.message || 'Sukses Menghapus Data', 'positive', 'check_circle_outline');
+                        this.getView();
+                        this.mdl_delete = false;
+                    } else {
+                        this.Notify(res_data?.message || 'Gagal Menghapus Data', 'warning', 'error');
+                    }
+                })
+                .catch((err) => {
+                    this.Notify('Gagal menghapus: ' + (err.message || 'Unknown error'), 'warning', 'error');
+                });
         },
 
         selectData(item) {
