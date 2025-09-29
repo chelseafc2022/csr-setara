@@ -1,0 +1,151 @@
+.transAbu{
+    background-color: #2c2c2c78;
+    color: white;
+}
+
+.merahGrad{
+    background-image: linear-gradient(to left, #f09999, #e37976, #d35a53, #c0382f, #aa0707);
+}
+
+.orageGrad{
+    background-image: linear-gradient(to left, #fdc99a, #ffb778, #ffa457, #ff9034, #ff7a00);
+}
+
+.abuGrad {
+    background-image: linear-gradient(to left, #d6d6d5, #b9b8b7, #9c9b9b, #7f7f7f, #646464);
+}
+
+.abuMudaGrad{
+    background-image: linear-gradient(to right top, #dedede, #e6e6e6, #eeeeee, #f7f7f7, #ffffff);
+}
+
+.birumudaGrad {
+    background-image: linear-gradient(to right top, #b8e2f9, #95d3fa, #71c4fc, #49b3fe, #00a2ff);
+}
+
+.biruSangatmudaGrad {
+    background-image: linear-gradient(to right top, #ffffff, #f3f5ff, #e1edff, #c9e6ff, #ace1ff);
+}
+
+.hijauMudaGrad{
+    background-image: linear-gradient(to right bottom, #a6d584, #a6d584, #a6d584, #a6d584, #a6d584, #a3d97e, #a0dc77, #9de070, #94e85f, #8af04d, #7ef734, #6fff00);
+}
+
+.hijauMudaGrad1{
+    background: rgb(78,176,1);
+background: linear-gradient(180deg, rgba(78,176,1,1) 14%, rgba(113,180,61,1) 36%, rgba(151,226,91,1) 100%);
+}
+
+
+.putihTrans{
+    background-color: rgba(255, 255, 255, 0.39);
+}
+
+
+.main1x{
+    background-color: #006377 !important;
+}
+
+.main1{
+    background-color: #2F94C5 !important;
+}
+
+
+.main2x{
+    background-color: #02738a !important;
+}
+
+.main2{
+    background-color: #22759f !important;
+}
+
+
+.main3x{
+    background-color: #d3cdbf !important;
+}
+.main3{
+    background-color: #faf6ed !important;
+}
+
+.main4x{
+    background-color: #779e21 !important;
+}
+.main4{
+    background-color: #9acb34 !important;
+}
+
+.main5x{
+    background-color: #6d9103 !important;
+}
+.main5{
+    background-color: #8ab211 !important;
+}
+
+.main6x{
+    background-color: #d1bf92 !important;
+}
+.main6{
+    background-color: #e7dbbc !important;
+}
+
+
+.widgetdashboardProsesIcon{
+    background-color: #FFB300 !important;
+}
+.widgetdashboardProsesNilai{
+    background-color: #f9c345 !important;
+}
+
+.widgetdashboardTolakIcon{
+    background-color: #E53834 !important;
+}
+
+.widgetdashboardTolakNilai{
+    background-color: #f2605e !important;
+}
+
+.widgetdashboardTerimaIcon{
+    background-color: #43A047 !important;
+}
+
+.widgetdashboardTerimaNilai{
+    background-color: #72dd78 !important;
+}
+
+
+.widgetdashboardTotal{
+    background-color: #006377 !important;
+}
+
+.widgetdashboardTotalNilai{
+    background-color: #1d96ae !important;
+}
+
+.widgetdashboardCSR{
+    background-color: #1e88e5 !important;
+}
+
+.widgetdashboardCSRNilai{
+    background-color: #389af0 !important;
+}
+
+.widgetdashboardSebagian{
+    background-color: #f57c00 !important;
+}
+
+.widgetdashboardSebagianNilai{
+    background-color: #f89532 !important;
+}
+
+.row-selesai {
+    background-color: #c8e6c9 !important; /* hijau lembut */
+    color: #2e7d32 !important;            /* teks hijau tua */
+    font-weight: bold;
+  }
+
+
+/* #008099 */
+/* #0095b3 */
+/* #faf6ed */
+/* #9acb34 */
+/* #8ab211 */

@@ -1,0 +1,237 @@
+table, td, th {  
+    border: 1px solid #ddd;
+    text-align: left;
+  }
+  
+  table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+  
+  th, td {
+    padding-left: 15px;
+    padding-right: 15px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+  }
+
+  tr:nth-child(even) {background-color: #eeeeee;}
+
+
+  .fab_kecil{
+      width: 45px;
+      height: 20px;
+  }
+
+
+  .tbl_responsive{
+    overflow-x:auto;
+  }
+
+
+  /* .q-fab i{
+    font-size: 12px !important;
+  } */
+
+
+  .rizwan_sex{
+    padding-left: 7px;
+  }
+
+
+  .bgku{ 
+    /* background: url('https://img.freepik.com/free-photo/top-view-desk-concept-with-laptop_23-2148236857.jpg?w=1380&t=st=1682603942~exp=1682604542~hmac=f00b49a52ae3c1759c4de8e03b9c070389225ec8f99f40975d1c4d967c9a356b') no-repeat center center fixed;  */
+    /* background-image: linear-gradient(to left, #c8ecff, #a2dafc, #7bc7f9, #51b4f7, #02a0f4); */
+    background: url('/img/bglogin.png') no-repeat center center fixed!important;
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+    min-height: 100%;
+    width: 100%;
+    height: auto;
+    position: fixed;
+    top: 0;
+    left: 0;
+  }
+
+  .formLogin{
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-bottom: 20px;
+    border-radius: 2%;
+  }
+
+  .margin_btn{
+    margin-bottom: 1.5% !important;
+  }
+
+  .tbl_btn{
+    width: 50px !important;
+  }
+
+  .paginate_btn{
+    width: 40px !important;
+  }
+
+  .hrpagin{
+    border: 10px solid #cfd8dc;
+  }
+
+  .hrpagin2{
+    border: 5px solid #cfd8dc;
+  }
+
+
+  .alertku{
+    padding: 3% 0% 3% 0% ;
+    background-color: rgb(212, 95, 150);
+    color: white;
+    font-weight: 500;
+    text-align: center;
+  }
+
+  .frWidget{
+    padding: 1.5%;
+  }
+
+  .frWidgetSub{
+    border-radius: 5px;
+    
+  }
+
+  .frWidgetSub1{
+    /* padding: 3% 0% 3% 0% ; */
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
+  }
+
+
+  .frWidgetSub2{
+    padding-left:2%; padding-right:2%;
+    padding-top: 4%; padding-bottom: 4%;
+
+    border-top-right-radius: 5px;
+    border-bottom-right-radius: 5px;
+
+    
+
+  }
+
+  .frame_cari{
+    padding-left: 1%;
+    padding-right: 1%;
+  }
+
+input.mdCheckbox { 
+    width: 20px; 
+    height: 20px; 
+} 
+
+input.mdCheckbox1 { 
+  width: 20px; 
+  height: 20px; 
+  background-color: yellow;
+} 
+
+.showx{
+  display: block !important;
+  animation: fade_in_show 0.5s
+}
+
+.hidex{
+  display: none;
+}
+
+
+.center_div {
+  margin: 0;
+  position: absolute;
+  /* top: 50%; */
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+
+
+
+.rowLeft {
+  padding-right: 1%;
+}
+
+.rowRight{
+  padding-left: 1%;
+}
+
+
+.gbrDoc{
+  width:60%; 
+  height:auto
+}
+
+@media (min-width: 1024px) {
+  .card-item {
+    height: 500px; /* desktop tetap rata */
+  }
+}
+
+.card-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.img-wrapper {
+  width: 100%;
+  height: 400px; /* tinggi card */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #ffffff;
+  overflow: hidden;
+}
+
+.full-img img {
+  width: 100%;
+  height: auto; /* tinggi mengikuti proporsi */
+}
+
+/* Judul section di modal (Informasi Program, Pelaksanaan Program, Status Program, Deskripsi, Alamat) */
+.text-subtitle1 {
+  font-weight: bold;
+  font-size: 1.05rem;        /* Sedikit lebih besar dari konten */
+  color: #1976d2;            /* Warna biru agar menonjol */
+  margin-bottom: 6px;        /* Jarak bawah dari field */
+  border-bottom: 1px solid #e0e0e0; /* Garis tipis bawah */
+  padding-bottom: 2px;       /* Sedikit jarak antara teks dan garis */
+}
+
+
+
+@media only screen and (max-width: 1023.8px) {
+  .rowLeft {
+    padding-right: 0%;
+  }
+  
+  .rowRight{
+    padding-left: 0%;
+  }
+
+  .gbrDoc{
+    width:50%; 
+    height:auto
+  }
+  
+
+}
+
+.col-md-5th {
+  flex: 0 0 20%!important;   /* 100% ÷ 5 */
+  max-width: 20%!important;
+}
+
+@media (max-width: 768px) {
+  .col-md-5th {
+    flex: 0 0 100%!important;
+    max-width: 100%!important;
+  }
+}
