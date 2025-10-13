@@ -18,13 +18,13 @@ var db  = mysql.createPool({
 //   database : 'absensi'
 // });
 
-db.getConnection((err)=>{
-    if(err){
-        console.log(err);
-    }else{
-        console.log('Terkoneksi dengan DATABASE UMUM');
-    }
-})
+// db.getConnection((err)=>{
+//     if(err){
+//         console.log(err);
+//     }else{
+//         console.log('Terkoneksi dengan DATABASE UMUM');
+//     }
+// })
 
 
 module.exports = db;

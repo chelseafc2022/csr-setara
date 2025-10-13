@@ -150,57 +150,6 @@ router.post('/viewData', (req, res) => {
   }
 });
 
-
-
-// router.post('/addData', (req, res) => {
-//     try {
-//       console.log("📩 Data diterima:", req.body);
-
-//       const { form } = req.body;
-//       const id = uniqid();
-
-//       let insert = `
-//         INSERT INTO kegiatan_csr (
-//           id, bidang_csr_id, bidang_sub_csr_id, nama_csr, deskripsi,
-//           jumlah, satuan, nilai, tanggal_mulai, tanggal_selesai,
-//           kecamatan_id, desa_id, alamat,
-//           status, createdBy, createdAt, editedBy, editedAt
-//         ) VALUES (
-//           '${id}',
-//           '${form.bidang_csr_id}',
-//           '${form.bidang_sub_csr_id}',
-//           '${form.nama_csr}',
-//           '${form.deskripsi}',
-//           '${form.jumlah}',
-//           '${form.satuan}',
-//           '${form.nilai}',
-//           '${form.tanggal_mulai}',
-//           '${form.tanggal_selesai}',
-//           '${form.kecamatan_id}',
-//           '${form.desa_id}',
-//           '${form.alamat}',
-//           1,
-//           '${req.user._id}',
-//           NOW(),
-//           '${req.user._id}',
-//           NOW()
-//         )
-//       `;
-
-//       db.query(insert, (err, result) => {
-//         if (err) {
-//           console.error("❌ DB Error:", err.sqlMessage);
-//           return res.status(500).json({ success: false, message: "DB Error", error: err });
-//         }
-//         console.log("✅ Insert sukses:", result);
-//         res.json({ success: true, message: "Data berhasil disimpan", id });
-//       });
-
-//     } catch (error) {
-//       console.error("❌ Server Error:", error);
-//       res.status(500).json({ success: false, message: "Server Error", error });
-//     }
-//   });
 // ====================== ADD DATA ======================
 router.post('/addData', uploadFields, (req, res) => {
   try {
@@ -337,49 +286,6 @@ router.post('/editData', uploadFields, (req, res) => {
   }
 });
 
-// router.post('/removeData', (req, res)=> {
-//   const id = req.body.id;
-//   const query = `DELETE FROM kegiatan_csr WHERE id = '${id}'`;
-
-//   db.query(query, (err, result)=>{
-//     if (err) {
-//       res.status(500).json({ success: false, error: err });
-//     } else {
-//       res.json({ success: true, affectedRows: result.affectedRows });
-//     }
-//   });
-// });
-
-// ====================== REMOVE DATA (hapus file juga) ======================
-// router.post('/removeData', (req, res) => {
-//   const id = req.body.id;
-//   if (!id) return res.status(400).json({ success: false, message: 'ID diperlukan' });
-
-//   // 1) Ambil nama file lama
-//   db.query('SELECT file_name, file_spec FROM kegiatan_csr WHERE id = ? LIMIT 1', [id], (err, rows) => {
-//     if (err) return res.status(500).json({ success: false, error: err });
-
-//     const fileImg  = rows?.[0]?.file_name || null;
-//     const fileSpec = rows?.[0]?.file_spec || null;
-//     const uploadDir = upload?.dest || 'uploads';
-
-//     // helper hapus file (diabaikan kalau tidak ada)
-//     const safeUnlink = (fname) => {
-//       if (!fname) return Promise.resolve();
-//       const fp = path.join(uploadDir, fname);
-//       return fs.promises.unlink(fp).catch(() => {}); // abaikan error (mis: file sudah hilang)
-//     };
-
-//     // 2) Hapus berkas (paralel), lalu 3) hapus record
-//     Promise.all([ safeUnlink(fileImg), safeUnlink(fileSpec) ])
-//       .finally(() => {
-//         db.query('DELETE FROM kegiatan_csr WHERE id = ?', [id], (err2, result) => {
-//           if (err2) return res.status(500).json({ success: false, error: err2 });
-//           res.json({ success: true, affectedRows: result.affectedRows, removedFiles: { file_name: fileImg, file_spec: fileSpec } });
-//         });
-//       });
-//   });
-// });
 
 router.post('/removeData', (req, res) => {
   const id = req.body.id;
@@ -517,7 +423,7 @@ router.post("/addPengajuan", (req, res) => {
         const pengajuanId = id;
         const tgl = new Date().toLocaleString();
 
-        const adminBase = (process.env.ADMIN_URL || 'http://localhost:3000').replace(/\/$/, '');
+        const adminBase = (process.env.ADMIN_URL).replace(/\/$/, '');
         const adminLink = `${adminBase}/#/list_pengajuan`;
 
 
