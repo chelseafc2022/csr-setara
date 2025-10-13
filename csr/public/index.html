@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <script src="assets/js/vendor/color-modes.js"></script>
+    <!-- <meta name="viewport" content="width=device-width,initial-scale=1.0"> -->
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- Tambahkan ini di <head> -->
+<link rel="icon" type="image/png" href="/assets/img/logo_konsel.png">
+
+
+    <!-- <title><%= htmlWebpackPlugin.options.title %></title> -->
+    <title>CSR </title>
+
+    <!-- CSS here -->
+        <link rel="stylesheet" href="assets/css/bootstrap.min.css" />
+        <link rel="stylesheet" href="assets/css/animate.min.css" />
+        <link rel="stylesheet" href="assets/css/magnific-popup.css" />
+        <link rel="stylesheet" href="assets/css/fontawesome-all.min.css" />
+        <link rel="stylesheet" href="assets/css/flaticon.css" />
+        <link rel="stylesheet" href="assets/css/odometer.css" />
+        <link rel="stylesheet" href="assets/css/swiper-bundle.css" />
+        <link rel="stylesheet" href="assets/css/aos.css" />
+        <link rel="stylesheet" href="assets/css/default.css" />
+        <link rel="stylesheet" href="assets/css/main.css" />
+        <link rel="stylesheet" href="assets/css/tambahan.css" />
+
+        <link rel='stylesheet' href='https://cdn-uicons.flaticon.com/3.0.0/uicons-bold-straight/css/uicons-bold-straight.css'>
+        <link rel='stylesheet' href='https://cdn-uicons.flaticon.com/3.0.0/uicons-regular-rounded/css/uicons-regular-rounded.css'>
+        <link rel='stylesheet' href='https://cdn-uicons.flaticon.com/3.0.0/uicons-thin-rounded/css/uicons-thin-rounded.css'>
+        <link rel='stylesheet' href='https://cdn-uicons.flaticon.com/3.0.0/uicons-thin-straight/css/uicons-thin-straight.css'>
+
+
+            <!-- CHART -->
+            <script src="https://code.highcharts.com/highcharts.js"></script>
+            <script src="https://code.highcharts.com/highcharts-3d.js"></script>
+            <script src="https://code.highcharts.com/modules/cylinder.js"></script>
+            <script src="https://code.highcharts.com/modules/exporting.js"></script>
+            <script src="https://code.highcharts.com/modules/export-data.js"></script>
+            <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+            <script src="https://code.highcharts.com/highcharts-more.js"></script>
+            <!-- CHART -->
+        
+
+  </head>
+  <body>
+    <noscript>
+      <strong>We're sorry but <%= htmlWebpackPlugin.options.title %> doesn't work properly without JavaScript enabled. Please enable it to continue.</strong>
+    </noscript>
+    <div id="app"></div>
+    <!-- built files will be auto injected -->
+
+    
+        <!-- JS here -->
+        <script src="assets/js/vendor/jquery-3.6.0.min.js"></script>
+        <script src="assets/js/bootstrap.bundle.min.js"></script>
+        <script src="assets/js/jquery.magnific-popup.min.js"></script>
+        <script src="assets/js/jquery.odometer.min.js"></script>
+        <script src="assets/js/jquery.appear.js"></script>
+        <script src="assets/js/gsap.js"></script>
+        <script src="assets/js/ScrollTrigger.js"></script>
+        <script src="assets/js/SplitText.js"></script>
+        <script src="assets/js/gsap-animation.js"></script>
+        <script src="assets/js/jquery.parallaxScroll.min.js"></script>
+        <script src="assets/js/swiper-bundle.js"></script>
+        <script src="assets/js/ajax-form.js"></script>
+        <script src="assets/js/wow.min.js"></script>
+        <script src="assets/js/aos.js"></script>
+        <script src="assets/js/main.js"></script>
+        <script>
+            const circles = document.querySelectorAll(".circle");
+            circles.forEach((circle) => {
+                circle.innerHTML = circle.textContent.replace(/\S/g, "<span>$&</span>");
+                const elements = circle.querySelectorAll("span");
+                for (let i = 0; i < elements.length; i++) {
+                    elements[i].style.transform = "rotate(" + i * 17 + "deg)";
+                }
+            });
+        </script>
+             
+  </body>
+</html>

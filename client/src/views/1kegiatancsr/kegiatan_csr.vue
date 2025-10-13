@@ -362,9 +362,14 @@
 
             <!-- FILE UPLOAD -->
             <span class="h_lable">Foto Kegiatan</span>
-            <q-file v-model="form.file" label="Pilih File" outlined square dense class="bg-white margin_btn" />
-            <div class="row items-center">
+            <q-file v-model="form.file" label="Pilih File" accept="image/*" outlined square dense
+              class="bg-white margin_btn" :rules="[
+              val => !!val || 'Foto kegiatan wajib diisi',
+              val => !val || (['image/jpeg', 'image/png', 'image/jpg'].includes(val.type)) || 'Hanya file JPG/PNG yang diperbolehkan'
+            ]" />
 
+
+            <div class="row items-center">
               <div :class="selectedItem.file_spec ? 'col-7' : 'col-12'">
                 <span class="h_lable">Lampiran Spesifikasi (PDF)</span>
                 <q-file v-model="form.file_spec" label="Ganti PDF (opsional)" accept=".pdf,application/pdf" outlined

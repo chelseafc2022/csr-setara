@@ -71,13 +71,12 @@
                 <tr class="h_table_head main1 text-white ">
                     <th width="5%" class="text-center">No</th>
                     <th width="5%">Status</th>
-                    <th width="20%">Nama Program</th>
-                    <th width="10%">Kecamatan</th>
+                    <th width="30%">Nama Program</th>
                     <th width="5%">Tanggal Pengajuan</th>
                     <th width="15%">Mitra/Perusahaan</th>
                     <th width="5%">Jumlah Pengambilan</th>
-                    <th width="5%">Tersedia</th>
-                    <th width="30%" class="text-center">Act</th>
+                    <th width="15%">Tersedia</th>
+                    <th width="20%" class="text-center">Act</th>
                     <!-- <th width="30%">Keterangan</th> -->
                     <!-- <th width="10%"></th> -->
                 </tr>
