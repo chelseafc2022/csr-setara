@@ -38,11 +38,6 @@
 <script>
 
 import { useStore } from 'vuex'
-// import { Swiper, SwiperSlide } from 'swiper/vue';
-// import 'swiper/swiper-bundle.css';
-const URL_APP = 'https://server-web.konaweselatankab.go.id/';
-
-const ADD_URL_FOTO = URL_APP + "api/v1/publish_dppkb_foto/";
 
 export default {
 data() {
@@ -83,21 +78,6 @@ return text.length > limit ? text.substring(0, limit) + '...' : text;
 
 cek_active(index) {
   return index === 0 ? 'active' : '';
-},
-
-getFoto: function() {
-    fetch(ADD_URL_FOTO, {
-        method: "get",
-        headers: {
-            "content-type": "application/json",
-        },
-    })
-        .then(res => res.json())
-        .then(res_data => { 
-            // console.log('🔍 list_foto:', res_data);
-            this.list_foto = res_data
-            
-    });
 },
 
 
