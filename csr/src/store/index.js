@@ -2,7 +2,7 @@ import { createStore } from 'vuex'
 
 
 // var URL_APP = 'https://server-web.konaweselatankab.go.id/';
-var URL_APP = 'http://localhost:5028/'
+var URL_APP = 'http://localhost:5052/'
 // var URL_APP = 'https://server-csr.konaweselatankab.go.id/'
 var URL_APP_EGOV = 'https://server-egov.konaweselatankab.go.id/';
 

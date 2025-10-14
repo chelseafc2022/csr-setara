@@ -22,7 +22,7 @@
                     <div class="row">
                         <div class="col-lg-12">
                             <div class="copyright-text-two">
-                                <p>Copyright © <a href="javascript:void(0);">2025 Kabupaten Konawe Selatan</a> | CSR Konawe Selatan</p>
+                                <p>Copyright © <a href="javascript:void(0);">2025 Kabupaten Konawe Selatan</a> | CSR - SETARA Kab. Konawe Selatan</p>
                             </div>
                         </div>
                     </div>
@@ -67,7 +67,6 @@ mounted() {
         1024: { slidesPerView: 5 }
         }
     })
-this.getFoto();
 },
 methods: {
 

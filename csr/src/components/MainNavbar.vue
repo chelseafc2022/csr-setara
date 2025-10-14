@@ -6,13 +6,13 @@
         <div class="row">
           <div class="col-lg-6">
             <ul class="tg-header__top-info left-side list-wrap">
-              <li><i class="flaticon-phone-call"></i><a href="javascript:void(0);">0821-9327-8680</a></li>
+              <li><i class="flaticon-phone-call"></i><a href="javascript:void(0);">0822-9166-2895</a></li>
               <li><i class="flaticon-pin"></i>Andoolo, Kabupaten Konawe Selatan</li>
             </ul>
           </div>
           <div class="col-lg-6">
             <ul class="tg-header__top-right list-wrap">
-              <li><i class="flaticon-envelope"></i><a href="javascript:void(0);">csrkonsel@gmail.com</a></li>
+              <li><i class="flaticon-envelope"></i><a href="javascript:void(0);">csrsetarakonsel@gmail.com</a></li>
               <li><i class="flaticon-time"></i>Mon-Fri: 08:00am - 15:30pm</li>
             </ul>
           </div>
@@ -39,7 +39,7 @@
                   <ul class="list-wrap">
                     <li class="header-btn">
                       <!-- <a href="contact.html" class="btn">Free Trial</a> -->
-                      <a class="btn" href="https://admin-csr.konaweselatankab.go.id" target="_blank">MASUK APP</a>
+                      <a class="btn" href="https://admin-csr.konaweselatankab.go.id/#/kegiatan_csr" target="_blank">MASUK APP</a>
                     </li>
 
                   </ul>
