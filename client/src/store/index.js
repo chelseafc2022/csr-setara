@@ -6,8 +6,8 @@ import { Notify } from 'quasar'
 
 Vue.use(Vuex)
 
-// var URL = 'http://localhost:5052/'
-var URL = 'https://server-csr.konaweselatankab.go.id/'
+var URL = 'http://localhost:5052/'
+// var URL = 'https://server-csr.konaweselatankab.go.id/'
 // var URL = 'http://192.168.1.8:5028/'
 // var URL = 'https://server.absensi.konaweselatankab.go.id/'
 
