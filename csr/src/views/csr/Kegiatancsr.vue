@@ -89,14 +89,18 @@
 
                         <div class="mt-50">
                             <div class="blog-post-wrap">
-                                <div class="row gutter-24">
+                                <div class="row gutter-24 position-relative">
 
-                                    <div class="col-xl-4 col-lg-4 col-md-4" v-for="(csr, index) in listCSR"
+                                <div v-if="isLoading" class="loading-overlay">
+                                    <div class="spinner"></div>
+                                </div>
+
+                                    <div v-else class="col-xl-4 col-lg-4 col-md-4" v-for="(csr, index) in listCSR"
                                         :key="index">
 
                                         <div class="blog__post-two shine-animate-item">
                                             <div class="blog__post-thumb-two">
-                                                <a :href="getImage(csr)" class="shine-animate">
+                                                <a @click="routerKe(csr.id)" href="javascript:void(0)" class="shine-animate">
                                                     <img :src="getImage(csr)" alt="CSR Image" />
                                                 </a>
                                             </div>
@@ -225,6 +229,7 @@ export default {
             totalPages: 0,
             listCSR: [],
 
+            isLoading: false,
 
             filters: {
                 status: '',
@@ -273,6 +278,7 @@ export default {
         },
 
         async fetchCSR(page = 1) {
+            this.isLoading = true; 
             try {
                 const res = await fetch(this.$store.state.URL.KEGIATAN_CSR + "kegiatanCSRview", {
                     method: "POST",
@@ -292,6 +298,8 @@ export default {
                 this.currentPage = page;
             } catch (err) {
                 console.error("Error fetching CSR:", err);
+            } finally {
+                this.isLoading = false; // stop loading
             }
         },
 
@@ -393,5 +401,32 @@ export default {
     font-size: 8pt !important;
     height: 35px !important;
     width: 35px !important;
+}
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10;
+  background: rgba(255, 255, 255, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 8px; /* optional, match your card layout */
+}
+
+.spinner {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #007bff; /* blue accent */
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 </style>

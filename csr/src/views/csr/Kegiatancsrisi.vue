@@ -16,7 +16,9 @@
                             <div class="blog__details-thumb">
                                 <h5 class="title">Informasi Program</h5>
                                 <hr style="border: 2px solid #0007cd;">
+                                <a :href="csrData ? getImage(csrData) : '/default-image.png'" class="shine-animate">
                                 <img :src="csrData ? getImage(csrData) : '/default-image.png'" alt="CSR Image">
+                                </a>
                             </div>
                         </div>
                         <div class="col-md-6 col-sm-12 mb-30">
