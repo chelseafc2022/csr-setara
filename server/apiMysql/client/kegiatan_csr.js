@@ -419,6 +419,7 @@ router.post("/addPengajuan", (req, res) => {
         const mitra = mitraRows[0] || {};
 
         const emailMitra = mitra.email_perusahaan || mitra.email_pj || null;
+        const adminEmail = process.env.NOTIF_TO || 'csrsetarakonsel@gmail.com';
         const adminEmails = await new Promise((resolve, reject) => {
           const sqlAdmins = `SELECT email FROM egov.users WHERE db_csrkonsel = 5 AND email IS NOT NULL AND email <> ''`;
           db.query(sqlAdmins, (err, results) => {
@@ -534,7 +535,7 @@ router.post("/addPengajuan", (req, res) => {
               <li><strong>Status:</strong> Menunggu verifikasi admin</li>
             </ul>
 
-            <p style="margin:0 0 14px; color:#555;">Estimasi proses: 1–3 hari kerja. Jika perlu info lebih lanjut, balas email ini atau hubungi admin di <a href="mailto:${escapeHtml(adminEmails)}">${escapeHtml(adminEmails)}</a>.</p>
+            <p style="margin:0 0 14px; color:#555;">Estimasi proses: 1–3 hari kerja. Jika perlu info lebih lanjut, balas email ini atau hubungi admin di <a href="mailto:${escapeHtml(adminEmail)}">${escapeHtml(adminEmail)}</a>.</p>
 
             <p style="margin:18px 0;">
               <a href="${adminLink}" style="display:inline-block; padding:10px 14px; background:#0d6efd; color:#fff; text-decoration:none; border-radius:6px;">Lihat Status Pengajuan</a>

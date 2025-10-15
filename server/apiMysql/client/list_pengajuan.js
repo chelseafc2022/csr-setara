@@ -344,15 +344,15 @@ router.post('/approvePengajuan', async (req, res) => {
 
       const adminBase = (process.env.ADMIN_URL || 'https://admin-csr.konaweselatankab.go.id').replace(/\/$/, '');
       const adminLink = `${adminBase}/#/list_pengajuan`;
-      // const adminEmails = process.env.NOTIF_TO || 'csrsetarakonsel@gmail.com';
+      const adminEmail = process.env.NOTIF_TO || 'csrsetarakonsel@gmail.com';
       const adminEmails = await new Promise((resolve, reject) => {
-          const sqlAdmins = `SELECT email FROM egov.users WHERE db_csrkonsel = 5 AND email IS NOT NULL AND email <> ''`;
-            db.query(sqlAdmins, (err, results) => {
-              if (err) return reject(err);
-              const emails = results.map(r => r.email).filter(e => !!e);
-              resolve(emails);
-            });
-          });
+        const sqlAdmins = `SELECT email FROM egov.users WHERE db_csrkonsel = 5 AND email IS NOT NULL AND email <> ''`;
+        db.query(sqlAdmins, (err, results) => {
+          if (err) return reject(err);
+          const emails = results.map(r => r.email).filter(e => !!e);
+          resolve(emails);
+        });
+      });
 
       const subject = `Pengajuan Anda Disetujui — ${safeProgram}`;
 
@@ -393,7 +393,7 @@ router.post('/approvePengajuan', async (req, res) => {
                     </p>
 
                     <p style="margin:14px 0 0; color:#666; font-size:13px;">
-                      Jika Anda butuh konfirmasi lebih lanjut, balas email ini atau hubungi admin di <a href="mailto:${escapeHtml(adminEmails)}">${escapeHtml(adminEmails)}</a>.
+                      Jika Anda butuh konfirmasi lebih lanjut, balas email ini atau hubungi admin di <a href="mailto:${escapeHtml(adminEmail)}">${escapeHtml(adminEmail)}</a>.
                     </p>
                   </td>
                 </tr>
@@ -485,7 +485,7 @@ router.post('/tolakPengajuan', async (req, res) => {
 
       const adminBase = (process.env.ADMIN_URL || 'https://admin-csr.konaweselatankab.go.id').replace(/\/$/, '');
       const adminLink = `${adminBase}/#/list_pengajuan`;
-      // const adminEmails = process.env.NOTIF_TO || 'csrsetarakonsel@gmail.com';
+      const adminEmail = process.env.NOTIF_TO || 'csrsetarakonsel@gmail.com';
       const adminEmails = await new Promise((resolve, reject) => {
           const sqlAdmins = `SELECT email FROM egov.users WHERE db_csrkonsel = 5 AND email IS NOT NULL AND email <> ''`;
             db.query(sqlAdmins, (err, results) => {
@@ -529,7 +529,7 @@ router.post('/tolakPengajuan', async (req, res) => {
             </p>
 
             <p style="margin:14px 0 0; font-size:13px; color:#666;">
-              Jika Anda merasa penolakan kurang jelas, balas email ini untuk klarifikasi atau hubungi admin di <a href="mailto:${escapeHtml(adminEmails)}">${escapeHtml(adminEmails)}</a>.
+              Jika Anda merasa penolakan kurang jelas, balas email ini untuk klarifikasi atau hubungi admin di <a href="mailto:${escapeHtml(adminEmail)}">${escapeHtml(adminEmail)}</a>.
             </p>
           </td>
         </tr>
@@ -601,9 +601,9 @@ router.post("/uploadEviden", upload.single("file"), async (req, res) => {
           });
 
           const info = infoRows && infoRows[0] ? infoRows[0] : null;
-          // const adminEmails = process.env.NOTIF_TO || 'csrsetarakonsel@gmail.com';
+          const adminEmail = process.env.NOTIF_TO || 'csrsetarakonsel@gmail.com';
           const adminEmails = await new Promise((resolve, reject) => {
-          const sqlAdmins = `SELECT email FROM egov.users WHERE db_csrkonsel = 5 AND email IS NOT NULL AND email <> ''`;
+            const sqlAdmins = `SELECT email FROM egov.users WHERE db_csrkonsel = 5 AND email IS NOT NULL AND email <> ''`;
             db.query(sqlAdmins, (err, results) => {
               if (err) return reject(err);
               const emails = results.map(r => r.email).filter(e => !!e);
