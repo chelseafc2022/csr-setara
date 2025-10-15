@@ -106,7 +106,7 @@
                         </div>
                     </td>
 
-                   
+
 
 
                     <td>{{ UMUM.tglConvert(data.tgl_pengajuan) }} </td>
@@ -122,64 +122,65 @@
                     </td>
                     <td class="text-center">
                         <q-btn-group>
-                        <!-- Tombol Lihat Detil -->
-                        <q-btn class="tbl_btn"  glossy color="blue" icon="visibility" 
-                            @click="selectData(data); mdl_lihat = true">
-                            <q-tooltip content-class="bg-blue-9" content-style="font-size: 13px">
-                                Lihat Detil
-                            </q-tooltip>
-                        </q-btn>
+                            <!-- Tombol Lihat Detil -->
+                            <q-btn class="tbl_btn" glossy color="blue" icon="visibility"
+                                @click="selectData(data); mdl_lihat = true">
+                                <q-tooltip content-class="bg-blue-9" content-style="font-size: 13px">
+                                    Lihat Detil
+                                </q-tooltip>
+                            </q-btn>
 
-                        <q-btn class="tbl_btn"  v-if="tipe === 4" glossy color="orange" icon="edit" 
-                            :disable="data.status_pengajuan == 2 || data.jumlah_sisa === 0 || data.jumlah_ambil > data.jumlah_sisa"
-                            @click="openEdit(data)">
-                            <q-tooltip content-class="bg-orange-9" content-style="font-size: 13px">
-                                Edit Pengambilan
-                            </q-tooltip>
-                        </q-btn>
+                            <q-btn class="tbl_btn" v-if="tipe === 4" glossy color="orange" icon="edit"
+                                :disable="data.status_pengajuan == 2 || data.jumlah_sisa === 0 || data.jumlah_ambil > data.jumlah_sisa"
+                                @click="openEdit(data)">
+                                <q-tooltip content-class="bg-orange-9" content-style="font-size: 13px">
+                                    Edit Pengambilan
+                                </q-tooltip>
+                            </q-btn>
 
-                        <!-- Tombol Hapus -->
-                        <q-btn class="tbl_btn"  v-if="tipe === 4" glossy color="red" icon="delete" 
-                            :disable="data.status_pengajuan == 2" @click="openDeleteModal(data)">
-                            <q-tooltip content-class="bg-red-9" content-style="font-size: 13px">
-                                Hapus Pengajuan
-                            </q-tooltip>
-                        </q-btn>
+                            <!-- Tombol Hapus -->
+                            <q-btn class="tbl_btn" v-if="tipe === 4" glossy color="red" icon="delete"
+                                :disable="data.status_pengajuan == 2" @click="openDeleteModal(data)">
+                                <q-tooltip content-class="bg-red-9" content-style="font-size: 13px">
+                                    Hapus Pengajuan
+                                </q-tooltip>
+                            </q-btn>
 
-                        <!-- Tombol Setujui -->
-                        <q-btn class="tbl_btn"  v-if="tipe === 1 || tipe === 5" glossy color="green" icon="check"
-                            :disable="data.status_pengajuan == 2 || data.status_pengajuan == 3 || data.jumlah_sisa === 0 || data.jumlah_ambil > data.jumlah_sisa"
-                            @click="approvePengajuan(data.id)">
-                            <q-tooltip content-class="bg-green-9" content-style="font-size: 13px">
-                                Setujui Pengajuan
-                            </q-tooltip>
-                        </q-btn>
+                            <!-- Tombol Setujui -->
+                            <q-btn class="tbl_btn" v-if="tipe === 1 || tipe === 5" glossy color="green" icon="check"
+                                :disable="data.status_pengajuan == 2 || data.status_pengajuan == 3 || data.jumlah_sisa === 0 || data.jumlah_ambil > data.jumlah_sisa"
+                                @click="approvePengajuan(data.id)">
+                                <q-tooltip content-class="bg-green-9" content-style="font-size: 13px">
+                                    Setujui Pengajuan
+                                </q-tooltip>
+                            </q-btn>
 
-                        <!-- Tombol Tolak -->
-                        <q-btn class="tbl_btn"  v-if="tipe === 1 || tipe === 5" glossy color="red" icon="block" 
-                            :disable="data.status_pengajuan == 2 || data.status_pengajuan == 3"
-                            @click="tolakPengajuan(data.id)">
-                            <q-tooltip content-class="bg-red-9" content-style="font-size: 13px">
-                                Tolak Pengajuan
-                            </q-tooltip>
-                        </q-btn>
+                            <!-- Tombol Tolak -->
+                            <q-btn class="tbl_btn" v-if="tipe === 1 || tipe === 5" glossy color="red" icon="block"
+                                :disable="data.status_pengajuan == 2 || data.status_pengajuan == 3"
+                                @click="tolakPengajuan(data.id)">
+                                <q-tooltip content-class="bg-red-9" content-style="font-size: 13px">
+                                    Tolak Pengajuan
+                                </q-tooltip>
+                            </q-btn>
 
-                        <!-- Tombol upload bukti -->
-                        <q-btn class="tbl_btn" v-if="tipe === 4 && data.status_pengajuan == 2" glossy color="purple"
-                            icon="photo_camera" @click="openUploadModal(data)">
-                            <q-tooltip content-class="bg-purple-9" content-style="font-size: 13px">
-                                Upload Bukti Program
-                            </q-tooltip>
-                        </q-btn>
+                            <!-- Tombol upload bukti -->
+                            <q-btn class="tbl_btn" v-if="tipe === 4 && data.status_pengajuan == 2" glossy color="purple"
+                                icon="photo_camera" @click="openUploadModal(data)">
+                                <q-tooltip content-class="bg-purple-9" content-style="font-size: 13px">
+                                    Upload Bukti Program
+                                </q-tooltip>
+                            </q-btn>
 
-                        <q-btn class="tbl_btn"  v-if="tipe === 1 || tipe === 5 && data.status_pengajuan == 2 && data.jml_eviden > 0"
-                            glossy color="purple" icon="photo_camera" :disable="data.status_pengajuan == 3"
-                            @click="lihatEviden(data)">
-                            <q-tooltip content-class="bg-purple-9" content-style="font-size: 13px">
-                                Lihat Bukti Program
-                            </q-tooltip>
-                        </q-btn>
-                    </q-btn-group>
+                            <q-btn class="tbl_btn"
+                                v-if="tipe === 1 || tipe === 5 && data.status_pengajuan == 2 && data.jml_eviden > 0"
+                                glossy color="purple" icon="photo_camera" :disable="data.status_pengajuan == 3"
+                                @click="lihatEviden(data)">
+                                <q-tooltip content-class="bg-purple-9" content-style="font-size: 13px">
+                                    Lihat Bukti Program
+                                </q-tooltip>
+                            </q-btn>
+                        </q-btn-group>
 
                     </td>
 
@@ -534,11 +535,16 @@
                     </table>
                 </q-card-section>
 
+
                 <q-card-actions align="right">
                     <q-btn label="Tutup" color="red" v-close-popup />
                     <q-btn glossy color="green" label="Selesaikan Program"
-                        :disable="selectedData && selectedData.status == 4"
-                        @click="selesaikanProgram(selectedData.id)" />
+                        :disable="selectedData && (selectedData.status == 4 || selectedData.jumlah_sisa > 0)"
+                        @click="selesaikanProgram(selectedData.id)">
+                        <q-tooltip content-class="bg-red-9" v-if="selectedData && selectedData.jumlah_sisa > 0">
+                            Jumlah Kegiatan masih tersedia ({{ selectedData.jumlah_sisa }})
+                        </q-tooltip>
+                    </q-btn>
                 </q-card-actions>
             </q-card>
         </q-dialog>
