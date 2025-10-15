@@ -199,8 +199,7 @@
 
             <!-- DESKRIPSI CSR -->
             <span class="h_lable">Deskripsi / Keterangan CSR</span>
-            <q-input v-model="form.deskripsi" type="textarea" outlined square :dense="true"
-              class="bg-white margin_btn" />
+            <q-editor v-model="form.deskripsi" :toolbar="editorToolbar" placeholder="Tulis deskripsi..." class="bg-white" />
 
             <!-- JUMLAH KEBUTUHAN -->
             <div class="row q-col-gutter-md">
@@ -310,8 +309,7 @@
 
             <!-- DESKRIPSI CSR -->
             <span class="h_lable">Deskripsi / Keterangan CSR</span>
-            <q-input v-model="form.deskripsi" type="textarea" outlined square :dense="true"
-              class="bg-white margin_btn" />
+            <q-editor v-model="form.deskripsi" :toolbar="editorToolbar" placeholder="Tulis deskripsi..." class="bg-white" />
 
             <!-- JUMLAH KEBUTUHAN -->
             <div class="row q-col-gutter-md">
@@ -519,8 +517,7 @@
           <!-- Deskripsi -->
           <div>
             <div class="text-subtitle1 text-bold q-mb-sm">📝 Deskripsi Program</div>
-            <q-card flat bordered class="q-pa-sm text-grey-9">
-              {{ selectedItem.deskripsi || 'Tidak ada deskripsi' }}
+            <q-card flat bordered class="q-pa-sm text-grey-9" v-html="selectedItem.deskripsi || '<i>Tidak ada deskripsi</i>'">
             </q-card>
           </div>
 
@@ -759,6 +756,14 @@ export default {
       catatanAmbil: '',
 
       tipe: null, // simpan tipe user
+
+      editorToolbar: [
+        ['bold', 'italic', 'underline'],
+        ['link', 'quote', 'unordered', 'ordered'],
+        ['left', 'center', 'right', 'justify'], // ✅ rata teks
+        ['image'], // ✅ upload / insert gambar
+        ['viewsource']
+      ],
 
 
       form: {

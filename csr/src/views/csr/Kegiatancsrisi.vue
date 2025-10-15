@@ -140,8 +140,7 @@
                             <div class="card shadow noborder">
                                 <div class="card shadow noborder">
                                     <div class="card-body">
-
-                                        <div>{{ csrData ? csrData.deskripsi : '' }}</div>
+                                        <div v-html="csrData ? csrData.deskripsi : ''"></div>
                                     </div>
                                 </div>
 

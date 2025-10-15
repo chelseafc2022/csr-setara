@@ -427,9 +427,6 @@ router.post("/addPengajuan", (req, res) => {
             resolve(emails);
           });
         });
-        console.log('====================================');
-        console.log(adminEmails);
-        console.log('====================================');
         const pengajuanId = id;
         const tgl = new Date().toLocaleString();
 
