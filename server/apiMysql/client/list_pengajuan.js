@@ -344,7 +344,15 @@ router.post('/approvePengajuan', async (req, res) => {
 
       const adminBase = (process.env.ADMIN_URL || 'https://admin-csr.konaweselatankab.go.id').replace(/\/$/, '');
       const adminLink = `${adminBase}/#/list_pengajuan`;
-      const adminEmails = process.env.NOTIF_TO || 'csrsetarakonsel@gmail.com';
+      // const adminEmails = process.env.NOTIF_TO || 'csrsetarakonsel@gmail.com';
+      const adminEmails = await new Promise((resolve, reject) => {
+          const sqlAdmins = `SELECT email FROM egov.users WHERE db_csrkonsel = 5 AND email IS NOT NULL AND email <> ''`;
+            db.query(sqlAdmins, (err, results) => {
+              if (err) return reject(err);
+              const emails = results.map(r => r.email).filter(e => !!e);
+              resolve(emails);
+            });
+          });
 
       const subject = `Pengajuan Anda Disetujui — ${safeProgram}`;
 
@@ -477,7 +485,15 @@ router.post('/tolakPengajuan', async (req, res) => {
 
       const adminBase = (process.env.ADMIN_URL || 'https://admin-csr.konaweselatankab.go.id').replace(/\/$/, '');
       const adminLink = `${adminBase}/#/list_pengajuan`;
-      const adminEmails = process.env.NOTIF_TO || 'csrsetarakonsel@gmail.com';
+      // const adminEmails = process.env.NOTIF_TO || 'csrsetarakonsel@gmail.com';
+      const adminEmails = await new Promise((resolve, reject) => {
+          const sqlAdmins = `SELECT email FROM egov.users WHERE db_csrkonsel = 5 AND email IS NOT NULL AND email <> ''`;
+            db.query(sqlAdmins, (err, results) => {
+              if (err) return reject(err);
+              const emails = results.map(r => r.email).filter(e => !!e);
+              resolve(emails);
+            });
+          });
 
       const subject = `Pengajuan Anda Ditolak — ${safeProgram}`;
 
@@ -585,7 +601,15 @@ router.post("/uploadEviden", upload.single("file"), async (req, res) => {
           });
 
           const info = infoRows && infoRows[0] ? infoRows[0] : null;
-          const adminEmails = process.env.NOTIF_TO || 'csrsetarakonsel@gmail.com';
+          // const adminEmails = process.env.NOTIF_TO || 'csrsetarakonsel@gmail.com';
+          const adminEmails = await new Promise((resolve, reject) => {
+          const sqlAdmins = `SELECT email FROM egov.users WHERE db_csrkonsel = 5 AND email IS NOT NULL AND email <> ''`;
+            db.query(sqlAdmins, (err, results) => {
+              if (err) return reject(err);
+              const emails = results.map(r => r.email).filter(e => !!e);
+              resolve(emails);
+            });
+          });
           const mitraEmail = info ? (info.email_perusahaan || info.email_pj) : null;
           const namaMitra = info ? (info.nama_perusahaan || info.nama_pj || 'Mitra') : 'Mitra';
           const namaProgram = info ? (info.nama_csr || 'Program CSR') : 'Program CSR';

@@ -419,7 +419,17 @@ router.post("/addPengajuan", (req, res) => {
         const mitra = mitraRows[0] || {};
 
         const emailMitra = mitra.email_perusahaan || mitra.email_pj || null;
-        const adminEmails = process.env.NOTIF_TO || 'csrsetarakonsel@gmail.com';
+        const adminEmails = await new Promise((resolve, reject) => {
+          const sqlAdmins = `SELECT email FROM egov.users WHERE db_csrkonsel = 5 AND email IS NOT NULL AND email <> ''`;
+          db.query(sqlAdmins, (err, results) => {
+            if (err) return reject(err);
+            const emails = results.map(r => r.email).filter(e => !!e);
+            resolve(emails);
+          });
+        });
+        console.log('====================================');
+        console.log(adminEmails);
+        console.log('====================================');
         const pengajuanId = id;
         const tgl = new Date().toLocaleString();
 
