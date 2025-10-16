@@ -1,68 +1,45 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../../db/MySql/umum');
-const bcrypt = require('bcryptjs');  
+const db = require('../../db/MySql/umum');  // Pastikan terhubung
+const upload = require('../../db/multer/pdf');  // Impor Multer dari file Anda
 
-router.post("/", async (req, res) => {
+router.post("/", upload.single('dokumen'), async (req, res) => {
   try {
     const {
-      username,
-      password,
-      nama,        
-      jabatan,
-      pic_email,
-      pic_hp,
-      perusahaan_nama,
+      nama,  // PIC
+      jabatan,  // PIC  (Catatan: jabatan tidak digunakan di query, pastikan jika dibutuhkan)
+      pic_email,  // PIC
+      pic_hp,  // PIC
+      perusahaan_nama,  // Digunakan sebagai 'nama' di tabel
       bidang_usaha_id,
       perusahaan_email,
       perusahaan_hp,
       alamat
     } = req.body;
 
-    // console.log("📥 Data diterima:", req.body); 
+    const dokumenFile = req.file;  // File dokumen yang diupload
 
-  
-    const hashedPassword = await bcrypt.hash(password.trim(), 12);
+    if (!dokumenFile) {
+      return res.status(400).json({ success: false, message: "Dokumen wajib diupload!" });
+    }
 
+    const sqlPending = `
+      INSERT INTO perusahaan 
+      (users_id, nama, bidang_usaha_id, email, hp, alamat, file_name, status, createdAt)
+      VALUES (NULL, ?, ?, ?, ?, ?, ?, 'pending', NOW())
+    `;  // Sekarang memiliki 7 placeholder, tapi kita sesuaikan array
 
-    const sqlUser = `
-      INSERT INTO users (username, password, email, hp, nama, jabatan, db_csrkonsel, createdAt)
-      VALUES (?, ?, ?, ?, ?, ?,?, NOW())
-    `;
-
+    // Array parameter: Pastikan sesuai dengan 7 placeholder
+    // Asumsi: nama = perusahaan_nama, email = perusahaan_email, hp = perusahaan_hp, file_name = dokumenFile.path
     db.query(
-      sqlUser,
-      [username, hashedPassword, pic_email, pic_hp, nama, jabatan, 4],
-      (err, resultUser) => {
+      sqlPending,
+      [perusahaan_nama, bidang_usaha_id, perusahaan_email, perusahaan_hp, alamat, dokumenFile.path],  // Array dengan 6 item, tapi SQL awalnya 7—lihat penjelasan
+      (err, result) => {
         if (err) {
-          console.error("❌ Insert user error:", err);
+          console.error("Error insert: ", err);  // Log error untuk debugging
           return res.status(500).json({ success: false, error: err.message });
         }
-
-        const users_id = resultUser.insertId;
-
- 
-        const sqlPerusahaan = `
-          INSERT INTO perusahaan (users_id, nama, bidang_usaha_id, email, hp, alamat)
-          VALUES (?, ?, ?, ?, ?, ?)
-        `;
-        db.query(
-          sqlPerusahaan,
-          [users_id, perusahaan_nama, bidang_usaha_id, perusahaan_email, perusahaan_hp, alamat],
-          (err2, resultPerusahaan) => {
-            if (err2) {
-              console.error("❌ Insert perusahaan error:", err2);
-              return res.status(500).json({ success: false, error: err2.message });
-            }
-
-            res.json({
-              success: true,
-              message: "Registrasi berhasil 🎉",
-              users_id,
-              perusahaan_id: resultPerusahaan.insertId,
-            });
-          }
-        );
+        res.json({ success: true, message: "Permohonan diterima dan akan diverifikasi." });
       }
     );
 
