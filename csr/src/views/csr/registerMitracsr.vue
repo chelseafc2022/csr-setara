@@ -49,7 +49,7 @@
                     <input type="text" class="form-control" v-model="form.jabatan" required>
                   </div>
 
-                  <div class="mb-3">
+                  <!-- <div class="mb-3">
                     <label class="form-label">Username *</label>
                     <input type="text" class="form-control" v-model="form.username" required>
                   </div>
@@ -57,7 +57,7 @@
                   <div class="mb-3">
                     <label class="form-label">Password *</label>
                     <input type="password" class="form-control" v-model="form.password" required>
-                  </div>
+                  </div> -->
 
                   <div class="mb-3">
                     <label class="form-label">Email *</label>
@@ -108,10 +108,13 @@
                     <textarea class="form-control" rows="3" v-model="form.alamat" required></textarea>
                   </div>
 
-                  <!-- <div class="mb-3">
-          <label class="form-label">Upload Dokumen (Opsional)</label>
-          <input type="file" class="form-control" @change="handleFileUpload">
-        </div> -->
+                  <div class="mb-3">
+                    <label class="form-label">
+                      Upload Dokumen (Wajib, sesuai syarat admin)*
+                    </label>
+                    <input type="file" class="form-control" accept="application/pdf" @change="handleFileUpload"
+                      required>
+                  </div>
                 </div>
               </div>
             </div>
@@ -119,7 +122,7 @@
             <!-- TOMBOL SUBMIT -->
             <div class="col-12 text-center mt-4">
               <button type="submit" class="btn">
-                🚀 Daftar Sekarang
+                🚀 Kirim Permohonan
               </button>
             </div>
 
@@ -153,8 +156,7 @@ export default {
         // tambahan untuk PIC
         nama: "",
         jabatan: "",
-        username: "",
-        password: ""
+        file_name: null  // Untuk menyimpan file dokumen
       },
 
 
@@ -182,22 +184,30 @@ export default {
     async submitForm() {
       try {
         const konfirmasi = confirm("Apakah data yang Anda isi sudah benar?");
+        if (!konfirmasi) return;
 
-        if (!konfirmasi) {
-          return; // kalau user klik Cancel, proses tidak jalan
-        }
+        const formData = new FormData();  // Gunakan FormData untuk mengirim file
+        formData.append('perusahaan_nama', this.form.perusahaan_nama);
+        formData.append('bidang_usaha_id', this.form.bidang_usaha_id);
+        formData.append('perusahaan_email', this.form.perusahaan_email);
+        formData.append('perusahaan_hp', this.form.perusahaan_hp);
+        formData.append('alamat', this.form.alamat);
+        formData.append('nama', this.form.nama);  // PIC
+        formData.append('jabatan', this.form.jabatan);  // PIC
+        formData.append('pic_email', this.form.pic_email);  // PIC
+        formData.append('pic_hp', this.form.pic_hp);  // PIC
+        formData.append('dokumen', this.form.file_name);  // Tambahkan file dokumen
 
         const res = await fetch(this.$store.state.URL.registrasiMitra, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(this.form)
+          body: formData  // Kirim FormData, bukan JSON.stringify
         });
 
         const data = await res.json();
 
         if (data.success) {
-          alert("Registrasi berhasil! 🎉");
-          window.location.href = "https://admin-csr.konaweselatankab.go.id/#/login";
+          alert("Permohonan berhasil dikirim! Admin akan memverifikasi dokumen Anda. Jika diterima, Silahkan Cek Email Anda Untuk Mendapatkan Akun 🎉");
+          // Redirect atau tampilkan pesan selanjutnya
         } else {
           alert("Gagal: " + data.message);
         }
@@ -208,7 +218,7 @@ export default {
     },
 
     handleFileUpload(event) {
-      this.form.file_name = event.target.files[0]
+      this.form.file_name = event.target.files[0];  // Simpan file yang dipilih
     },
 
 
