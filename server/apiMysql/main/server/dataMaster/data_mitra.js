@@ -446,9 +446,6 @@ router.post('/editDataUsaha', (req,res)=>{
 
 
 router.post('/removeDataUsaha', (req, res)=> {
-    // var file = req.body.file
-    // hapus_file(file);
-
     var query = `
         DELETE FROM master_bidang_usaha WHERE id = '`+req.body.id+`';
     `;
@@ -475,7 +472,7 @@ router.post("/byBidang", (req, res) => {
     })
   })
 
-  // GET semua bidang usaha
+
 router.get("/bidang", (req, res) => {
     const sql = `SELECT id, uraian FROM master_bidang_usaha ORDER BY uraian ASC`;
     db.query(sql, (err, rows) => {
@@ -487,7 +484,6 @@ router.get("/bidang", (req, res) => {
     });
   });
 
-  // ambil detail perusahaan berdasarkan users_id
 router.post('/viewByUser', (req, res) => {
     const users_id = req.body.users_id;
   
@@ -804,6 +800,97 @@ router.post('/tolakRegistrasi', (req, res) => {
     res.json({ success: true, message: 'Registrasi berhasil ditolak dan catatan disimpan' });
   });
 });
+
+router.post('/approveRegistrasi', async (req, res) => {
+  const { id, username, password } = req.body;
+
+  // Validasi input
+  if (!id || !username || !password) {
+    return res.status(400).json({ success: false, message: 'ID perusahaan, username, dan password wajib dikirim' });
+  }
+
+  if (username.trim() === '' || password.trim() === '') {
+    return res.status(400).json({ success: false, message: 'Username dan password tidak boleh kosong' });
+  }
+
+  try {
+    // Cek apakah username sudah ada (kecuali user ini sendiri, tapi karena null, biasanya aman)
+    const checkUsernameSql = `
+  SELECT username FROM (
+    SELECT username FROM db_csrkonsel.users
+    UNION
+    SELECT username FROM egov.users
+  ) AS all_users
+  WHERE username = ? LIMIT 1
+`;
+
+
+    db.query(checkUsernameSql, [username.trim()], async (err, result) => {
+      if (err) {
+        console.error('Error cek username:', err);
+        return res.status(500).json({ success: false, message: 'Gagal cek username', error: err.message });
+      }
+
+      if (result.length > 0) {
+        return res.status(400).json({ success: false, message: 'Username sudah digunakan, pilih username lain' });
+      }
+
+      // Ambil users_id dari perusahaan
+      const getUsersIdSql = `SELECT users_id FROM db_csrkonsel.perusahaan WHERE id = ? AND status = 'pending' LIMIT 1`;
+      db.query(getUsersIdSql, [id], async (err2, perusahaanResult) => {
+        if (err2) {
+          console.error('Error ambil users_id:', err2);
+          return res.status(500).json({ success: false, message: 'Gagal ambil data perusahaan', error: err2.message });
+        }
+
+        if (perusahaanResult.length === 0) {
+          return res.status(404).json({ success: false, message: 'Perusahaan tidak ditemukan atau sudah diproses' });
+        }
+
+        const usersId = perusahaanResult[0].users_id;
+
+        // Hash password
+        const hashedPassword = await bcrypt.hash(password.trim(), 12);
+
+        // Update user: set username dan password
+        const updateUserSql = `
+          UPDATE db_csrkonsel.users
+          SET username = ?, password = ?
+          WHERE id = ?
+        `;
+        db.query(updateUserSql, [username.trim(), hashedPassword, usersId], (err3, userResult) => {
+          if (err3) {
+            console.error('Error update user:', err3);
+            return res.status(500).json({ success: false, message: 'Gagal update akun user', error: err3.message });
+          }
+
+          const updatePerusahaanSql = `
+            UPDATE db_csrkonsel.perusahaan
+            SET status = 'terima',
+            catatan_admin = 'Mitra/Perusahaan Telah disetujui'
+            WHERE id = ? AND status = 'pending'
+          `;
+          db.query(updatePerusahaanSql, [id], (err4, perusahaanResult) => {
+            if (err4) {
+              console.error('Error update perusahaan:', err4);
+              return res.status(500).json({ success: false, message: 'Gagal update status perusahaan', error: err4.message });
+            }
+
+            if (perusahaanResult.affectedRows === 0) {
+              return res.status(404).json({ success: false, message: 'Perusahaan tidak ditemukan atau sudah diproses' });
+            }
+
+            res.json({ success: true, message: 'Registrasi disetujui dan akun diaktifkan' });
+          });
+        });
+      });
+    });
+  } catch (error) {
+    console.error('Error approve registrasi:', error);
+    res.status(500).json({ success: false, message: 'Terjadi kesalahan server', error: error.message });
+  }
+});
+
 
 
 module.exports = router;
