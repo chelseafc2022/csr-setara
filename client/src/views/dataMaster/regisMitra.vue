@@ -82,7 +82,7 @@
                   <q-btn-group>
                     <!-- Tombol Lihat Detil -->
                     <q-btn class="tbl_btn" glossy color="green" icon="document_scanner"
-                    @click="openDocumentModal(data)">
+                      @click="openDocumentModal(data)">
                       <q-tooltip content-class="bg-green-9" content-style="font-size: 13px">
                         Lihat Dokumen
                       </q-tooltip>
@@ -96,34 +96,39 @@
                       <q-btn glossy dense round icon="settings" color="red">
                         <q-menu>
                           <q-list dense style="min-width: 100px">
-                            <!-- Opsi Setujui Registrasi (Approve) dengan kondisi -->
+                            
                             <q-item clickable v-if="tipe === 1 || tipe === 5" v-close-popup
-                              @click="approveRegistrasi(data.id)">
+                              @click="approveRegistrasi(data.id)"
+                              :disable="data.status === 'terima' || data.status === 'ditolak'">
                               <q-item-section>Setujui Registrasi</q-item-section>
                             </q-item>
                             <q-separator v-if="tipe === 1 || tipe === 5" />
 
-                            <!-- Opsi Tolak Registrasi (Reject) dengan kondisi -->
+                            <!-- Opsi Tolak Registrasi -->
                             <q-item clickable v-if="tipe === 1 || tipe === 5" v-close-popup
-                              @click="tolakRegistrasi(data.id)">
+                              @click="tolakRegistrasi(data.id)"
+                              :disable="data.status === 'terima' || data.status === 'ditolak'">
                               <q-item-section>Tolak Registrasi</q-item-section>
                             </q-item>
                             <q-separator v-if="tipe === 1 || tipe === 5" />
 
                             <!-- Opsi Edit Password -->
-                            <q-item clickable v-close-popup @click="mdl_password = true; selectData(data)">
+                            <q-item clickable v-close-popup @click="mdl_password = true; selectData(data)"
+                              :disable="data.status === 'pending' || data.status === 'ditolak'">
                               <q-item-section>Edit Password</q-item-section>
                             </q-item>
                             <q-separator />
 
                             <!-- Opsi Edit -->
-                            <q-item clickable v-close-popup @click="mdl_edit = true; selectData(data)">
+                            <q-item clickable v-close-popup @click="mdl_edit = true; selectData(data)"
+                              :disable="data.status === 'pending' || data.status === 'ditolak'">
                               <q-item-section>Edit</q-item-section>
                             </q-item>
                             <q-separator />
 
                             <!-- Opsi Hapus -->
-                            <q-item clickable v-close-popup @click="mdl_hapus = true; selectData(data)">
+                            <q-item clickable v-close-popup @click="mdl_hapus = true; selectData(data)"
+                              :disable="data.status !== 'ditolak'">
                               <q-item-section>Hapus</q-item-section>
                             </q-item>
                           </q-list>
@@ -132,6 +137,7 @@
                     </div>
                   </q-item-section>
                 </td>
+
               </tr>
             </tbody>
           </table>
@@ -385,49 +391,49 @@
 
     <!-- ========================== KETERANGAN ================================ -->
 
-     <!-- ================================================= MODAL OPEN ================================================ -->
-<q-dialog v-model="mdl_open" persistent>
-  <q-card class="mdl-md">
-    <q-card-section class="bg-green">
-      <div class="text-h6 h_modalhead">Dokumen</div>
-    </q-card-section>
+    <!-- ================================================= MODAL OPEN ================================================ -->
+    <q-dialog v-model="mdl_open" persistent>
+      <q-card class="mdl-md">
+        <q-card-section class="bg-green">
+          <div class="text-h6 h_modalhead">Dokumen</div>
+        </q-card-section>
 
-    <q-card-section class="q-pt-none">
-      <br>
-      <div class="text-center">
-        <hr class="hrpagin2">
-        <embed :src="file_path + selectedDocument.file_name" width="100%" height="600" type="application/pdf" 
-               @error="handleFileError">
-          <!-- <p>Dokumen tidak dapat ditampilkan. <a :href="file_path + selectedDocument.file_name" target="_blank">Buka di tab baru</a></p> -->
-        </embed>
-        <hr class="hrpagin2">
-      </div>
-    </q-card-section>
+        <q-card-section class="q-pt-none">
+          <br>
+          <div class="text-center">
+            <hr class="hrpagin2">
+            <embed :src="file_path + selectedDocument.file_name" width="100%" height="600" type="application/pdf"
+              @error="handleFileError">
+            <!-- <p>Dokumen tidak dapat ditampilkan. <a :href="file_path + selectedDocument.file_name" target="_blank">Buka di tab baru</a></p> -->
+            </embed>
+            <hr class="hrpagin2">
+          </div>
+        </q-card-section>
 
-    <q-card-actions class="bg-grey-4 mdl-footer" align="right">
-      <!-- <q-btn color="primary" @click="downloadFile()" label="Download" /> -->
-      <q-btn label="Kembali" color="negative" v-close-popup />
-    </q-card-actions>
-  </q-card>
-</q-dialog>
-<!-- ================================================= MODAL OPEN ================================================ -->
-<!-- ================================================= MODAL SETUJUI ================================================ -->
-<q-dialog v-model="mdl_approve" persistent>
-    <q-card class="mdl-md">
-      <q-card-section class="bg-green">
-        <div class="text-h6 h_modalhead">Setujui Registrasi</div>
-      </q-card-section>
-      <q-card-section>
-        <q-input v-model="approve_form.username" label="Username" outlined dense class="q-mb-sm" />
-        <q-input v-model="approve_form.password" label="Password" type="password" outlined dense class="q-mb-sm" />
-      </q-card-section>
-      <q-card-actions align="right" class="bg-grey-4">
-        <q-btn label="Setujui" @click="submitApprove()" color="primary" />
-        <q-btn label="Batal" v-close-popup color="negative" />
-      </q-card-actions>
-    </q-card>
-  </q-dialog>
-<!-- ================================================= MODAL SETUJUI ================================================ -->
+        <q-card-actions class="bg-grey-4 mdl-footer" align="right">
+          <!-- <q-btn color="primary" @click="downloadFile()" label="Download" /> -->
+          <q-btn label="Kembali" color="negative" v-close-popup />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+    <!-- ================================================= MODAL OPEN ================================================ -->
+    <!-- ================================================= MODAL SETUJUI ================================================ -->
+    <q-dialog v-model="mdl_approve" persistent>
+      <q-card class="mdl-md">
+        <q-card-section class="bg-green">
+          <div class="text-h6 h_modalhead">Setujui Registrasi</div>
+        </q-card-section>
+        <q-card-section>
+          <q-input v-model="approve_form.username" label="Username" outlined dense class="q-mb-sm" />
+          <q-input v-model="approve_form.password" label="Password" type="password" outlined dense class="q-mb-sm" />
+        </q-card-section>
+        <q-card-actions align="right" class="bg-grey-4">
+          <q-btn label="Setujui" @click="submitApprove()" color="primary" />
+          <q-btn label="Batal" v-close-popup color="negative" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+    <!-- ================================================= MODAL SETUJUI ================================================ -->
   </div>
 </template>
 
@@ -460,7 +466,7 @@ export default {
       mdl_catatan_admin: false,
       mdl_open: false,
       file_path: this.$store.state.url.URL_APP + "uploads/",
-      selectedDocument: { 
+      selectedDocument: {
         file_name: ''
       },
       mdl_approve: false,
@@ -841,7 +847,7 @@ export default {
     },
 
     // Tolak registrasi: Buka modal untuk isi catatan_admin
-     tolakRegistrasi(id) {
+    tolakRegistrasi(id) {
       const item = this.list_data.find(d => d.id === id);
       if (!item) {
         this.Notify('Data tidak ditemukan', 'negative', 'warning');
@@ -852,39 +858,39 @@ export default {
     },
     // Submit tolak: Kirim catatan_admin dan update status ke "ditolak"
     async submitTolak() {
-  if (!this.selectedItem.catatan_admin.trim()) {
-    this.Notify('Catatan admin harus diisi', 'negative', 'warning');
-    return;
-  }
-  // Ganti $q.dialog dengan window.confirm untuk konfirmasi sederhana (menghindari error)
-  const confirm = window.confirm('Apakah Anda yakin ingin menolak registrasi ini? Status akan berubah ke "ditolak".');
-  if (!confirm) return;
-  
-  try {
-    const res = await fetch(this.$store.state.url.DATA_MITRA + "tolakRegistrasi", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        authorization: "kikensbatara " + localStorage.token  // Jika backend pakai token; jika tidak, hapus baris ini
-      },
-      body: JSON.stringify({
-        id: this.selectedItem.id,
-        catatan_admin: this.selectedItem.catatan_admin
-      })
-    });
-    const data = await res.json();
-    if (data.success) {
-      this.Notify('Registrasi ditolak dan catatan disimpan', 'negative', 'cancel');
-      this.getView(); // Refresh tabel untuk update status ke "ditolak"
-      this.mdl_catatan_admin = false; // Tutup modal
-    } else {
-      this.Notify(data.message, 'negative', 'error_outline');
-    }
-  } catch (err) {
-    console.error(err);
-    this.Notify('Terjadi kesalahan server', 'negative', 'error_outline');
-  }
-},
+      if (!this.selectedItem.catatan_admin.trim()) {
+        this.Notify('Catatan admin harus diisi', 'negative', 'warning');
+        return;
+      }
+      // Ganti $q.dialog dengan window.confirm untuk konfirmasi sederhana (menghindari error)
+      const confirm = window.confirm('Apakah Anda yakin ingin menolak registrasi ini? Status akan berubah ke "ditolak".');
+      if (!confirm) return;
+
+      try {
+        const res = await fetch(this.$store.state.url.DATA_MITRA + "tolakRegistrasi", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            authorization: "kikensbatara " + localStorage.token  // Jika backend pakai token; jika tidak, hapus baris ini
+          },
+          body: JSON.stringify({
+            id: this.selectedItem.id,
+            catatan_admin: this.selectedItem.catatan_admin
+          })
+        });
+        const data = await res.json();
+        if (data.success) {
+          this.Notify('Registrasi ditolak dan catatan disimpan', 'negative', 'cancel');
+          this.getView(); // Refresh tabel untuk update status ke "ditolak"
+          this.mdl_catatan_admin = false; // Tutup modal
+        } else {
+          this.Notify(data.message, 'negative', 'error_outline');
+        }
+      } catch (err) {
+        console.error(err);
+        this.Notify('Terjadi kesalahan server', 'negative', 'error_outline');
+      }
+    },
 
     Notify: function (message, positive, icon) {
       this.$q.notify({
@@ -897,12 +903,12 @@ export default {
     },
 
     openDocumentModal(data) {
-    console.log("Data yang diklik:", data);
-    const fileName = data.file_name || '';  // Akan kosong sampai backend update
-    this.selectedDocument = { file_name: fileName };
-    this.mdl_open = true;  // Modal terbuka, tampilkan pesan "Dokumen tidak tersedia" jika kosong
-  },
-     
+      console.log("Data yang diklik:", data);
+      const fileName = data.file_name || '';  // Akan kosong sampai backend update
+      this.selectedDocument = { file_name: fileName };
+      this.mdl_open = true;  // Modal terbuka, tampilkan pesan "Dokumen tidak tersedia" jika kosong
+    },
+
 
     handleFileError() {
       this.$q.notify({
