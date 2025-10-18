@@ -93,7 +93,7 @@
                 <td class="text-center">
                   <q-item-section>
                     <div class="text-grey-8 q-gutter-xs text-center">
-                      <q-btn size="12px" flat dense round icon="settings">
+                      <q-btn glossy dense round icon="settings" color="red">
                         <q-menu>
                           <q-list dense style="min-width: 100px">
                             <!-- Opsi Setujui Registrasi (Approve) dengan kondisi -->
@@ -339,11 +339,11 @@
     <q-dialog v-model="mdl_catatan_admin" persistent>
       <q-card class="mdl-md">
         <q-card-section class="bg-orange text-white">
-          <div class="text-h6">Evaluasi Pengajuan</div>
+          <div class="text-h6">Tolak Pengajuan</div>
         </q-card-section>
 
         <q-card-section>
-          <span class="h_lable">Hasil Evaluasi</span>
+          <span class="h_lable">Alasan Penolakan</span>
           <!-- v-model langsung ke selectedItem.catatan_admin -->
           <q-input v-model="selectedItem.catatan_admin" outlined square dense type="textarea"
             class="bg-white q-mt-sm" />
@@ -411,6 +411,23 @@
   </q-card>
 </q-dialog>
 <!-- ================================================= MODAL OPEN ================================================ -->
+<!-- ================================================= MODAL SETUJUI ================================================ -->
+<q-dialog v-model="mdl_approve" persistent>
+    <q-card class="mdl-md">
+      <q-card-section class="bg-green">
+        <div class="text-h6 h_modalhead">Setujui Registrasi</div>
+      </q-card-section>
+      <q-card-section>
+        <q-input v-model="approve_form.username" label="Username" outlined dense class="q-mb-sm" />
+        <q-input v-model="approve_form.password" label="Password" type="password" outlined dense class="q-mb-sm" />
+      </q-card-section>
+      <q-card-actions align="right" class="bg-grey-4">
+        <q-btn label="Setujui" @click="submitApprove()" color="primary" />
+        <q-btn label="Batal" v-close-popup color="negative" />
+      </q-card-actions>
+    </q-card>
+  </q-dialog>
+<!-- ================================================= MODAL SETUJUI ================================================ -->
   </div>
 </template>
 
@@ -446,11 +463,17 @@ export default {
       selectedDocument: { 
         file_name: ''
       },
+      mdl_approve: false,
+      approve_form: {
+        username: '',
+        password: ''
+      },
       selectedItem: {},
       mdl_keterangan: false,
       pic_data: null,
       btn_add: false,
       btn_edit: false,
+      btn_hapus: false,
       filterku: {
         master_bidang_usaha: ''  // filter pakai bidang
       },
@@ -771,43 +794,27 @@ export default {
       this.mdl_keterangan = true; // buka modal keterangan
     },
 
-    approveRegistrasi: async function (id) {
-      await UMUM.notifApprove(); // asumsikan UMUM ada, atau ganti dengan konfirmasi
-      fetch(this.$store.state.url.DATA_MITRA + "approveRegistrasi", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          authorization: "kikensbatara " + localStorage.token
-        },
-        body: JSON.stringify({ id })
-      })
-        .then(res => res.json())
-        .then(res_data => {
-          if (res_data.success) {
-            this.Notify('Registrasi disetujui', 'positive', 'check_circle_outline');
-            this.getView();
-          } else {
-            this.Notify(res_data.message, 'negative', 'error_outline');
-          }
-        })
-        .catch(err => console.error(err));
-    },
-
-    tolakRegistrasi: async function (id) {
-      // Cari data sesuai id dan simpan di selectedItem
+    approveRegistrasi(id) {
       const item = this.list_data.find(d => d.id === id);
-      if (!item) return;
-      this.selectedItem = { ...item, catatan_admin: '' };
-      this.mdl_catatan_admin = true; // buka modal tolak, asumsikan ada modal ini
-    },
-
-    submitTolak: async function () {
-      if (!this.selectedItem.catatan_admin) {
-        this.Notify('Catatan harus diisi', 'negative', 'warning');
+      if (!item) {
+        this.Notify('Data tidak ditemukan', 'negative', 'warning');
         return;
       }
+      this.selectedItem = { ...item };
+      this.approve_form = { username: '', password: '' };  // Reset form
+      this.mdl_approve = true;
+    },
+
+    // Tambahan: Method baru untuk submit approve dengan username dan password
+    async submitApprove() {
+      // Validasi input
+      if (!this.approve_form.username.trim() || !this.approve_form.password.trim()) {
+        this.Notify('Username dan Password harus diisi', 'negative', 'warning');
+        return;
+      }
+
       try {
-        const res = await fetch(this.$store.state.url.DATA_MITRA + "tolakRegistrasi", {
+        const res = await fetch(this.$store.state.url.DATA_MITRA + "approveRegistrasi", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -815,22 +822,69 @@ export default {
           },
           body: JSON.stringify({
             id: this.selectedItem.id,
-            catatan_admin: this.selectedItem.catatan_admin
+            username: this.approve_form.username,
+            password: this.approve_form.password
           })
         });
         const data = await res.json();
         if (data.success) {
-          this.Notify('Registrasi ditolak', 'negative', 'cancel');
-          this.getView();
-          this.mdl_catatan_admin = false;
+          this.Notify('Registrasi disetujui dan akun dibuat', 'positive', 'check_circle_outline');
+          this.mdl_approve = false;
+          this.getView();  // Refresh tabel
         } else {
-          this.Notify(data.message, 'negative', 'error_outline');
+          this.Notify(data.message || 'Gagal menyetujui registrasi', 'negative', 'error_outline');
         }
       } catch (err) {
         console.error(err);
         this.Notify('Terjadi kesalahan server', 'negative', 'error_outline');
       }
     },
+
+    // Tolak registrasi: Buka modal untuk isi catatan_admin
+     tolakRegistrasi(id) {
+      const item = this.list_data.find(d => d.id === id);
+      if (!item) {
+        this.Notify('Data tidak ditemukan', 'negative', 'warning');
+        return;
+      }
+      this.selectedItem = { ...item, catatan_admin: '' }; // Reset catatan_admin untuk input baru
+      this.mdl_catatan_admin = true;
+    },
+    // Submit tolak: Kirim catatan_admin dan update status ke "ditolak"
+    async submitTolak() {
+  if (!this.selectedItem.catatan_admin.trim()) {
+    this.Notify('Catatan admin harus diisi', 'negative', 'warning');
+    return;
+  }
+  // Ganti $q.dialog dengan window.confirm untuk konfirmasi sederhana (menghindari error)
+  const confirm = window.confirm('Apakah Anda yakin ingin menolak registrasi ini? Status akan berubah ke "ditolak".');
+  if (!confirm) return;
+  
+  try {
+    const res = await fetch(this.$store.state.url.DATA_MITRA + "tolakRegistrasi", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        authorization: "kikensbatara " + localStorage.token  // Jika backend pakai token; jika tidak, hapus baris ini
+      },
+      body: JSON.stringify({
+        id: this.selectedItem.id,
+        catatan_admin: this.selectedItem.catatan_admin
+      })
+    });
+    const data = await res.json();
+    if (data.success) {
+      this.Notify('Registrasi ditolak dan catatan disimpan', 'negative', 'cancel');
+      this.getView(); // Refresh tabel untuk update status ke "ditolak"
+      this.mdl_catatan_admin = false; // Tutup modal
+    } else {
+      this.Notify(data.message, 'negative', 'error_outline');
+    }
+  } catch (err) {
+    console.error(err);
+    this.Notify('Terjadi kesalahan server', 'negative', 'error_outline');
+  }
+},
 
     Notify: function (message, positive, icon) {
       this.$q.notify({
