@@ -25,8 +25,8 @@ router.post("/", upload.single('dokumen'), async (req, res) => {
 
     const sqlPending = `
       INSERT INTO perusahaan 
-      (users_id, nama, bidang_usaha_id, email, hp, alamat, file_name, status, createdAt)
-      VALUES (NULL, ?, ?, ?, ?, ?, ?, 'pending', NOW())
+      (users_id, nama, bidang_usaha_id, email, hp, alamat, file_name, status, catatan_admin, createdAt)
+      VALUES (NULL, ?, ?, ?, ?, ?, ?, 'pending','Menunggu Verifikasi Admin', NOW())
     `;  // Sekarang memiliki 7 placeholder, tapi kita sesuaikan array
 
     // Array parameter: Pastikan sesuai dengan 7 placeholder

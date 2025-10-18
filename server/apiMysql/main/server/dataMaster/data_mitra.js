@@ -536,7 +536,7 @@ router.post('/viewByUser', (req, res) => {
     const offset = data_ke;
   
     let query = `
-  SELECT p.id, p.users_id, p.nama, b.uraian AS bidang_usaha,
+  SELECT p.id, p.users_id, p.nama, b.uraian AS bidang_usaha, p.status, p.catatan_admin,
          p.email, p.hp, p.alamat,
          u.username, u.nama AS nama_pic, u.jabatan, u.email AS email_pic, u.hp AS hp_pic
   FROM perusahaan p
@@ -577,6 +577,50 @@ params.push(parseInt(page_limit), parseInt(offset));
   });
   
   
+// router.post('/listRegis', (req, res) => {
+//   const { page_limit = 10, data_ke = 0, users_id, master_bidang_usaha } = req.body;
+//   const offset = data_ke;
+
+//   let query = `
+// SELECT p.id, p.users_id, p.nama, b.uraian AS bidang_usaha,
+//        p.email, p.hp, p.alamat, p.status,  // Tambahkan p.status di sini
+//        u.username, u.nama AS nama_pic, u.jabatan, u.email AS email_pic, u.hp AS hp_pic
+// FROM perusahaan p
+// LEFT JOIN users u ON u.id = p.users_id
+// LEFT JOIN master_bidang_usaha b ON b.id = p.bidang_usaha_id
+// WHERE 1=1
+// `;
+
+//   const params = [];
+
+//   if (master_bidang_usaha) {
+//     query += " AND p.bidang_usaha_id = ?";
+//     params.push(master_bidang_usaha);
+//   }
+
+//   if (users_id) {
+//     query += " AND p.users_id = ?";
+//     params.push(users_id);
+//   }
+
+//   query += " ORDER BY p.id ASC LIMIT ? OFFSET ?";
+//   params.push(parseInt(page_limit), parseInt(offset));
+
+//   db.query(query, params, (err, data) => {
+//     if (err) return res.status(500).json({ success: false, message: err.message });
+
+//     db.query('SELECT COUNT(*) as total FROM perusahaan', (err2, totalRes) => {
+//       if (err2) return res.status(500).json({ success: false, message: err2.message });
+
+//       res.json({
+//         success: true,
+//         data: data,
+//         jml_data: data.length,
+//         total_data: totalRes[0].total
+//       });
+//     });
+//   });
+// });
 
 
 function hapus_file(file){
