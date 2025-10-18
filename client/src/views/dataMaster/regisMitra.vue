@@ -50,9 +50,10 @@
                 <th width="5%" class="text-center">Status</th>
                 <th width="20%">Nama Perusahaan</th>
                 <th width="15%">Bidang Usaha</th>
-                <th width="15%">Email</th>
-                <th width="10%">No HP</th>
-                <th width="25%">Alamat</th>
+                <th width="10%">Email</th>
+                <th width="5%">No HP</th>
+                <th width="20%">Alamat</th>
+                <th width="10%">Dokumen</th>
                 <th width="10%">Aksi</th>
               </tr>
             </thead>
@@ -77,6 +78,18 @@
                 <td>{{ data.email }}</td>
                 <td>{{ data.hp }}</td>
                 <td>{{ data.alamat }}</td>
+                <td class="text-center">
+                  <q-btn-group>
+                    <!-- Tombol Lihat Detil -->
+                    <q-btn class="tbl_btn" glossy color="green" icon="document_scanner"
+                    @click="openDocumentModal(data)">
+                      <q-tooltip content-class="bg-green-9" content-style="font-size: 13px">
+                        Lihat Dokumen
+                      </q-tooltip>
+                    </q-btn>
+
+                  </q-btn-group>
+                </td>
                 <td class="text-center">
                   <q-item-section>
                     <div class="text-grey-8 q-gutter-xs text-center">
@@ -321,57 +334,83 @@
       </q-card>
     </q-dialog>
     <!-- ================================================ MODAL HAPUS ================================================ -->
-     <!-- ===================== MODAL TOLAK ===================== -->
+    <!-- ===================== MODAL TOLAK ===================== -->
 
-     <q-dialog v-model="mdl_catatan_admin" persistent>
-            <q-card class="mdl-md">
-                <q-card-section class="bg-orange text-white">
-                    <div class="text-h6">Evaluasi Pengajuan</div>
-                </q-card-section>
+    <q-dialog v-model="mdl_catatan_admin" persistent>
+      <q-card class="mdl-md">
+        <q-card-section class="bg-orange text-white">
+          <div class="text-h6">Evaluasi Pengajuan</div>
+        </q-card-section>
 
-                <q-card-section>
-                    <span class="h_lable">Hasil Evaluasi</span>
-                    <!-- v-model langsung ke selectedItem.catatan_admin -->
-                    <q-input v-model="selectedItem.catatan_admin" outlined square dense type="textarea"
-                        class="bg-white q-mt-sm" />
-                </q-card-section>
+        <q-card-section>
+          <span class="h_lable">Hasil Evaluasi</span>
+          <!-- v-model langsung ke selectedItem.catatan_admin -->
+          <q-input v-model="selectedItem.catatan_admin" outlined square dense type="textarea"
+            class="bg-white q-mt-sm" />
+        </q-card-section>
 
-                <q-card-actions align="right" class="bg-grey-4">
-                    <q-btn color="warning" label="Evaluasi" @click="submitTolak()" />
-                    <q-btn color="negative" label="Batal" v-close-popup />
-                </q-card-actions>
-            </q-card>
-        </q-dialog>
-
-
+        <q-card-actions align="right" class="bg-grey-4">
+          <q-btn color="warning" label="Evaluasi" @click="submitTolak()" />
+          <q-btn color="negative" label="Batal" v-close-popup />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
 
 
-        <!-- ===================== MODAL TOLAK ===================== -->
-
-        <!-- ========================== KETERANGAN ================================ -->
-        <q-dialog v-model="mdl_keterangan" persistent>
-            <q-card class="mdl-md">
-                <q-card-section class="bg-orange">
-                    <div class="text-h6 h_modalhead">KETERANGAN</div>
-                </q-card-section>
-
-                <q-card-section class="q-pt-none">
-                    <br>
-                    <span style="margin-top:100px">{{ selectedItem.catatan_admin }}</span>
-
-                </q-card-section>
-
-                <q-card-actions class="bg-grey-4 mdl-footer" align="right">
-
-                    <q-btn label="Close" color="negative" v-close-popup />
-
-                </q-card-actions>
-            </q-card>
-        </q-dialog>
 
 
-        <!-- ========================== KETERANGAN ================================ -->
+    <!-- ===================== MODAL TOLAK ===================== -->
 
+    <!-- ========================== KETERANGAN ================================ -->
+    <q-dialog v-model="mdl_keterangan" persistent>
+      <q-card class="mdl-md">
+        <q-card-section class="bg-orange">
+          <div class="text-h6 h_modalhead">KETERANGAN</div>
+        </q-card-section>
+
+        <q-card-section class="q-pt-none">
+          <br>
+          <span style="margin-top:100px">{{ selectedItem.catatan_admin }}</span>
+
+        </q-card-section>
+
+        <q-card-actions class="bg-grey-4 mdl-footer" align="right">
+
+          <q-btn label="Close" color="negative" v-close-popup />
+
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
+
+    <!-- ========================== KETERANGAN ================================ -->
+
+     <!-- ================================================= MODAL OPEN ================================================ -->
+<q-dialog v-model="mdl_open" persistent>
+  <q-card class="mdl-md">
+    <q-card-section class="bg-green">
+      <div class="text-h6 h_modalhead">Dokumen</div>
+    </q-card-section>
+
+    <q-card-section class="q-pt-none">
+      <br>
+      <div class="text-center">
+        <hr class="hrpagin2">
+        <embed :src="file_path + selectedDocument.file_name" width="100%" height="600" type="application/pdf" 
+               @error="handleFileError">
+          <!-- <p>Dokumen tidak dapat ditampilkan. <a :href="file_path + selectedDocument.file_name" target="_blank">Buka di tab baru</a></p> -->
+        </embed>
+        <hr class="hrpagin2">
+      </div>
+    </q-card-section>
+
+    <q-card-actions class="bg-grey-4 mdl-footer" align="right">
+      <!-- <q-btn color="primary" @click="downloadFile()" label="Download" /> -->
+      <q-btn label="Kembali" color="negative" v-close-popup />
+    </q-card-actions>
+  </q-card>
+</q-dialog>
+<!-- ================================================= MODAL OPEN ================================================ -->
   </div>
 </template>
 
@@ -402,8 +441,13 @@ export default {
       mdl_hapus: false,
       mdl_pic: false,
       mdl_catatan_admin: false,
-      selectedItem: {}, 
-    mdl_keterangan: false,
+      mdl_open: false,
+      file_path: this.$store.state.url.URL_APP + "uploads/",
+      selectedDocument: { 
+        file_name: ''
+      },
+      selectedItem: {},
+      mdl_keterangan: false,
       pic_data: null,
       btn_add: false,
       btn_edit: false,
@@ -798,7 +842,36 @@ export default {
       })
     },
 
+    openDocumentModal(data) {
+    console.log("Data yang diklik:", data);
+    const fileName = data.file_name || '';  // Akan kosong sampai backend update
+    this.selectedDocument = { file_name: fileName };
+    this.mdl_open = true;  // Modal terbuka, tampilkan pesan "Dokumen tidak tersedia" jika kosong
+  },
+     
 
+    handleFileError() {
+      this.$q.notify({
+        type: 'negative',
+        message: 'Gagal memuat dokumen.',
+        icon: 'error'
+      });
+    },
+
+    // downloadFile() {
+    //   if (this.selectedDocument.file_name) {
+    //     const link = document.createElement('a');
+    //     link.href = this.file_path + this.selectedDocument.file_name;
+    //     link.download = this.selectedDocument.file_name;  
+    //     link.click();
+    //   } else {
+    //     this.$q.notify({
+    //       type: 'negative',
+    //       message: 'File tidak tersedia.',
+    //       icon: 'warning'
+    //     });
+    //   }
+    // },
 
   },
   mounted() {
