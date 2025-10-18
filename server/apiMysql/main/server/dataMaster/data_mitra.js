@@ -537,7 +537,7 @@ router.post('/viewByUser', (req, res) => {
   
     let query = `
   SELECT p.id, p.users_id, p.nama, b.uraian AS bidang_usaha, p.status, p.catatan_admin,
-         p.email, p.hp, p.alamat,
+         p.email, p.hp, p.alamat, p.file_name,
          u.username, u.nama AS nama_pic, u.jabatan, u.email AS email_pic, u.hp AS hp_pic
   FROM perusahaan p
   LEFT JOIN users u ON u.id = p.users_id
