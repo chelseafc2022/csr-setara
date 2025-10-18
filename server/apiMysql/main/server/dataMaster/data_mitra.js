@@ -782,5 +782,28 @@ router.post("/hapusmitra", (req, res) => {
   });
 });
 
+router.post('/tolakRegistrasi', (req, res) => {
+  const { id, catatan_admin } = req.body; // id perusahaan dan catatan dari frontend
+  if (!id || !catatan_admin || catatan_admin.trim() === '') {
+    return res.status(400).json({ success: false, message: 'ID dan catatan admin diperlukan' });
+  }
+  // Query: Update status ke 'ditolak' dan set catatan_admin jika status saat ini 'pending'
+  const query = `
+    UPDATE db_csrkonsel.perusahaan 
+    SET status = 'ditolak', catatan_admin = ? 
+    WHERE id = ? AND status = 'pending'
+  `;
+  db.query(query, [catatan_admin.trim(), id], (err, result) => {
+    if (err) {
+      console.error('Error tolak registrasi:', err);
+      return res.status(500).json({ success: false, message: 'Gagal tolak registrasi', error: err.message });
+    }
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ success: false, message: 'Registrasi tidak ditemukan atau sudah diproses' });
+    }
+    res.json({ success: true, message: 'Registrasi berhasil ditolak dan catatan disimpan' });
+  });
+});
+
 
 module.exports = router;
