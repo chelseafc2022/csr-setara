@@ -104,7 +104,6 @@
                             </q-item>
                             <q-separator v-if="tipe === 1 || tipe === 5" />
 
-                            <!-- Opsi Tolak Registrasi -->
                             <q-item clickable v-if="tipe === 1 || tipe === 5" v-close-popup
                               @click="tolakRegistrasi(data.id)"
                               :disable="data.status === 'terima' || data.status === 'ditolak'">
@@ -112,21 +111,17 @@
                             </q-item>
                             <q-separator v-if="tipe === 1 || tipe === 5" />
 
-                            <!-- Opsi Edit Password -->
                             <q-item clickable v-close-popup @click="mdl_password = true; selectData(data)"
                               :disable="data.status === 'pending' || data.status === 'ditolak'">
                               <q-item-section>Edit Password</q-item-section>
                             </q-item>
                             <q-separator />
 
-                            <!-- Opsi Edit -->
                             <q-item clickable v-close-popup @click="mdl_edit = true; selectData(data)"
                               :disable="data.status === 'pending' || data.status === 'ditolak'">
                               <q-item-section>Edit</q-item-section>
                             </q-item>
                             <q-separator />
-
-                            <!-- Opsi Hapus -->
                             <q-item clickable v-close-popup @click="mdl_hapus = true; selectData(data)"
                               :disable="data.status !== 'ditolak'">
                               <q-item-section>Hapus</q-item-section>
@@ -554,13 +549,13 @@ export default {
       })
         .then(res => res.json())
         .then(res_data => {
-          console.log("Respons API listRegis:", res_data);  // Log seluruh respons
+          console.log("Respons API listRegis:", res_data); 
           if (res_data.data && res_data.data.length > 0) {
             res_data.data.forEach(item => {
-              console.log("Item data.status:", item.status);  // Log nilai status untuk setiap item
+              // console.log("Item data.status:", item.status);  
             });
           } else {
-            console.log("list_data kosong atau tidak ada data");
+            // console.log("list_data kosong atau tidak ada data");
           }
           this.list_data = res_data.data;
           this.jml_data = res_data.jml_data;
@@ -632,15 +627,12 @@ export default {
       })
         .then(res => res.json())
         .then(res_data => {
-          console.log("📌 hasil bidang:", res_data); // debug
+          // console.log("📌 hasil bidang:", res_data); // debug
           this.list_bidang = res_data.data || [];
         });
     },
 
-
-    // ... method lain sudah ada
     selectData(data) {
-      // ambil data user saat klik tombol edit password
       this.dataku = {
         users_id: data.users_id,
         password: '',
@@ -660,14 +652,13 @@ export default {
       this.form = {
         ...data,
         users_id: data.users_id,
-        id: data.id // id perusahaan
+        id: data.id 
       };
     },
 
     async editDataPassword() {
       this.errorMessage = '';
 
-      // validasi password
       if (!this.dataku.password || !this.dataku.confirmPassword) {
         this.errorMessage = "Password dan Confirm Password wajib diisi!";
         return;
@@ -695,7 +686,7 @@ export default {
 
         if (data.success) {
           this.$q.notify({ type: "positive", message: "Password berhasil diubah!" });
-          this.mdl_password = false; // tutup modal
+          this.mdl_password = false;
         } else {
           this.errorMessage = data.message || "Gagal mengubah password!";
         }
@@ -716,7 +707,7 @@ export default {
         body: JSON.stringify({
           users_id: this.form.users_id,
           perusahaan_id: this.form.id,
-          password: this.form.password || "", // optional
+          password: this.form.password || "", 
           nama: this.form.pic_nama,
           jabatan: this.form.pic_jabatan,
           pic_email: this.form.pic_email,
@@ -767,7 +758,7 @@ export default {
           authorization: "kikensbatara " + localStorage.token
         },
         body: JSON.stringify({
-          users_id: this.form.users_id,      // harus ada
+          users_id: this.form.users_id, 
           perusahaan_id: this.form.id
         })
       })
@@ -776,7 +767,7 @@ export default {
           this.btn_hapus = false;
           if (res_data.success) {
             this.mdl_hapus = false;
-            this.getView(); // refresh tabel
+            this.getView(); 
             this.$q.notify({ type: 'positive', message: res_data.message });
           } else {
             this.$q.notify({ type: 'negative', message: res_data.error || 'Gagal hapus' });
@@ -792,12 +783,9 @@ export default {
     },
     cari_data() { this.page_first = 1; this.getView(); },
 
-
-
-    // Tambahan method untuk modal keterangan dan approve/tolak
     lihatKeterangan: function (item) {
       this.selectedItem = { ...item };
-      this.mdl_keterangan = true; // buka modal keterangan
+      this.mdl_keterangan = true;
     },
 
     approveRegistrasi(id) {
@@ -807,13 +795,11 @@ export default {
         return;
       }
       this.selectedItem = { ...item };
-      this.approve_form = { username: '', password: '' };  // Reset form
+      this.approve_form = { username: '', password: '' }; 
       this.mdl_approve = true;
     },
 
-    // Tambahan: Method baru untuk submit approve dengan username dan password
     async submitApprove() {
-      // Validasi input
       if (!this.approve_form.username.trim() || !this.approve_form.password.trim()) {
         this.Notify('Username dan Password harus diisi', 'negative', 'warning');
         return;
@@ -836,7 +822,7 @@ export default {
         if (data.success) {
           this.Notify('Registrasi disetujui dan akun dibuat', 'positive', 'check_circle_outline');
           this.mdl_approve = false;
-          this.getView();  // Refresh tabel
+          this.getView();  
         } else {
           this.Notify(data.message || 'Gagal menyetujui registrasi', 'negative', 'error_outline');
         }
@@ -846,23 +832,22 @@ export default {
       }
     },
 
-    // Tolak registrasi: Buka modal untuk isi catatan_admin
     tolakRegistrasi(id) {
       const item = this.list_data.find(d => d.id === id);
       if (!item) {
         this.Notify('Data tidak ditemukan', 'negative', 'warning');
         return;
       }
-      this.selectedItem = { ...item, catatan_admin: '' }; // Reset catatan_admin untuk input baru
+      this.selectedItem = { ...item, catatan_admin: '' }; 
       this.mdl_catatan_admin = true;
     },
-    // Submit tolak: Kirim catatan_admin dan update status ke "ditolak"
+
     async submitTolak() {
       if (!this.selectedItem.catatan_admin.trim()) {
         this.Notify('Catatan admin harus diisi', 'negative', 'warning');
         return;
       }
-      // Ganti $q.dialog dengan window.confirm untuk konfirmasi sederhana (menghindari error)
+
       const confirm = window.confirm('Apakah Anda yakin ingin menolak registrasi ini? Status akan berubah ke "ditolak".');
       if (!confirm) return;
 
@@ -871,7 +856,7 @@ export default {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            authorization: "kikensbatara " + localStorage.token  // Jika backend pakai token; jika tidak, hapus baris ini
+            authorization: "kikensbatara " + localStorage.token 
           },
           body: JSON.stringify({
             id: this.selectedItem.id,
@@ -881,8 +866,8 @@ export default {
         const data = await res.json();
         if (data.success) {
           this.Notify('Registrasi ditolak dan catatan disimpan', 'negative', 'cancel');
-          this.getView(); // Refresh tabel untuk update status ke "ditolak"
-          this.mdl_catatan_admin = false; // Tutup modal
+          this.getView(); 
+          this.mdl_catatan_admin = false;
         } else {
           this.Notify(data.message, 'negative', 'error_outline');
         }
@@ -904,9 +889,9 @@ export default {
 
     openDocumentModal(data) {
       console.log("Data yang diklik:", data);
-      const fileName = data.file_name || '';  // Akan kosong sampai backend update
+      const fileName = data.file_name || ''; 
       this.selectedDocument = { file_name: fileName };
-      this.mdl_open = true;  // Modal terbuka, tampilkan pesan "Dokumen tidak tersedia" jika kosong
+      this.mdl_open = true;  
     },
 
 
