@@ -1,5 +1,8 @@
 const express = require('express');
 var db = require('../../../../db/MySql/umum');
+const crypto = require('crypto');
+const bcrypt = require('bcryptjs'); 
+const { sendMail, escapeHtml } = require('../../../library/mailer'); 
 
 
 const fs = require('fs');
@@ -617,10 +620,6 @@ function hapus_file(file) {
 }
 
 
-
-
-const bcrypt = require('bcryptjs');
-
 router.post('/editPassword', async (req, res) => {
   const { users_id, password } = req.body;
 
@@ -695,7 +694,6 @@ router.post("/EditMitra", async (req, res) => {
           return res.status(500).json({ success: false, error: errUser.message });
         }
 
-        // ===== Update tabel perusahaan =====
         const sqlPerusahaan = `
           UPDATE perusahaan SET
             nama = ?,
@@ -739,7 +737,7 @@ router.post("/hapusmitra", (req, res) => {
     return res.status(400).json({ success: false, error: "ID PIC / Perusahaan dibutuhkan" });
   }
 
-  // ===== Hapus perusahaan =====
+
   const sqlPerusahaan = `DELETE FROM perusahaan WHERE id = ? AND users_id = ?`;
   db.query(sqlPerusahaan, [perusahaan_id, users_id], (errPer, resultPer) => {
     if (errPer) {
@@ -747,7 +745,6 @@ router.post("/hapusmitra", (req, res) => {
       return res.status(500).json({ success: false, error: errPer.message });
     }
 
-    // ===== Hapus user/PIC =====
     const sqlUser = `DELETE FROM users WHERE id = ?`;
     db.query(sqlUser, [users_id], (errUser, resultUser) => {
       if (errUser) {
@@ -764,11 +761,11 @@ router.post("/hapusmitra", (req, res) => {
 });
 
 router.post('/tolakRegistrasi', (req, res) => {
-  const { id, catatan_admin } = req.body; // id perusahaan dan catatan dari frontend
+  const { id, catatan_admin } = req.body; 
   if (!id || !catatan_admin || catatan_admin.trim() === '') {
     return res.status(400).json({ success: false, message: 'ID dan catatan admin diperlukan' });
   }
-  // Query: Update status ke 'ditolak' dan set catatan_admin jika status saat ini 'pending'
+
   const query = `
     UPDATE db_csrkonsel.perusahaan 
     SET status = 'ditolak', catatan_admin = ? 
@@ -786,91 +783,208 @@ router.post('/tolakRegistrasi', (req, res) => {
   });
 });
 
+
+// router.post('/approveRegistrasi', async (req, res) => {
+//   const { id, username, password } = req.body;
+
+//   // Validasi input
+//   if (!id || !username || !password) {
+//     return res.status(400).json({ success: false, message: 'ID perusahaan, username, dan password wajib dikirim' });
+//   }
+
+//   if (username.trim() === '' || password.trim() === '') {
+//     return res.status(400).json({ success: false, message: 'Username dan password tidak boleh kosong' });
+//   }
+
+//   try {
+//     const checkUsernameSql = `
+//   SELECT username FROM (
+//     SELECT username FROM db_csrkonsel.users
+//     UNION
+//     SELECT username FROM egov.users
+//   ) AS all_users
+//   WHERE username = ? LIMIT 1
+// `;
+
+
+//     db.query(checkUsernameSql, [username.trim()], async (err, result) => {
+//       if (err) {
+//         console.error('Error cek username:', err);
+//         return res.status(500).json({ success: false, message: 'Gagal cek username', error: err.message });
+//       }
+
+//       if (result.length > 0) {
+//         return res.status(400).json({ success: false, message: 'Username sudah digunakan, pilih username lain' });
+//       }
+
+//       const getUsersIdSql = `SELECT users_id FROM db_csrkonsel.perusahaan WHERE id = ? AND status = 'pending' LIMIT 1`;
+//       db.query(getUsersIdSql, [id], async (err2, perusahaanResult) => {
+//         if (err2) {
+//           console.error('Error ambil users_id:', err2);
+//           return res.status(500).json({ success: false, message: 'Gagal ambil data perusahaan', error: err2.message });
+//         }
+
+//         if (perusahaanResult.length === 0) {
+//           return res.status(404).json({ success: false, message: 'Perusahaan tidak ditemukan atau sudah diproses' });
+//         }
+
+//         const usersId = perusahaanResult[0].users_id;
+
+//         const hashedPassword = await bcrypt.hash(password.trim(), 12);
+
+//         const updateUserSql = `
+//           UPDATE db_csrkonsel.users
+//           SET username = ?, password = ?
+//           WHERE id = ?
+//         `;
+//         db.query(updateUserSql, [username.trim(), hashedPassword, usersId], (err3, userResult) => {
+//           if (err3) {
+//             console.error('Error update user:', err3);
+//             return res.status(500).json({ success: false, message: 'Gagal update akun user', error: err3.message });
+//           }
+
+//           const updatePerusahaanSql = `
+//             UPDATE db_csrkonsel.perusahaan
+//             SET status = 'terima',
+//             catatan_admin = 'Mitra/Perusahaan Telah disetujui'
+//             WHERE id = ? AND status = 'pending'
+//           `;
+//           db.query(updatePerusahaanSql, [id], (err4, perusahaanResult) => {
+//             if (err4) {
+//               console.error('Error update perusahaan:', err4);
+//               return res.status(500).json({ success: false, message: 'Gagal update status perusahaan', error: err4.message });
+//             }
+
+//             if (perusahaanResult.affectedRows === 0) {
+//               return res.status(404).json({ success: false, message: 'Perusahaan tidak ditemukan atau sudah diproses' });
+//             }
+
+//             res.json({ success: true, message: 'Registrasi disetujui dan akun diaktifkan' });
+//           });
+//         });
+//       });
+//     });
+//   } catch (error) {
+//     console.error('Error approve registrasi:', error);
+//     res.status(500).json({ success: false, message: 'Terjadi kesalahan server', error: error.message });
+//   }
+// });
+
 router.post('/approveRegistrasi', async (req, res) => {
   const { id, username, password } = req.body;
 
-  // Validasi input
+  // Validasi sederhana
   if (!id || !username || !password) {
-    return res.status(400).json({ success: false, message: 'ID perusahaan, username, dan password wajib dikirim' });
-  }
-
-  if (username.trim() === '' || password.trim() === '') {
-    return res.status(400).json({ success: false, message: 'Username dan password tidak boleh kosong' });
+    return res.status(400).json({ success: false, message: 'ID, username, dan password wajib diisi' });
   }
 
   try {
+    // 1) cek username di dua tabel (db_csrkonsel.users + egov.users)
     const checkUsernameSql = `
-  SELECT username FROM (
-    SELECT username FROM db_csrkonsel.users
-    UNION
-    SELECT username FROM egov.users
-  ) AS all_users
-  WHERE username = ? LIMIT 1
-`;
-
-
-    db.query(checkUsernameSql, [username.trim()], async (err, result) => {
-      if (err) {
-        console.error('Error cek username:', err);
-        return res.status(500).json({ success: false, message: 'Gagal cek username', error: err.message });
-      }
-
-      if (result.length > 0) {
-        return res.status(400).json({ success: false, message: 'Username sudah digunakan, pilih username lain' });
-      }
-
-      const getUsersIdSql = `SELECT users_id FROM db_csrkonsel.perusahaan WHERE id = ? AND status = 'pending' LIMIT 1`;
-      db.query(getUsersIdSql, [id], async (err2, perusahaanResult) => {
-        if (err2) {
-          console.error('Error ambil users_id:', err2);
-          return res.status(500).json({ success: false, message: 'Gagal ambil data perusahaan', error: err2.message });
-        }
-
-        if (perusahaanResult.length === 0) {
-          return res.status(404).json({ success: false, message: 'Perusahaan tidak ditemukan atau sudah diproses' });
-        }
-
-        const usersId = perusahaanResult[0].users_id;
-
-        const hashedPassword = await bcrypt.hash(password.trim(), 12);
-
-        const updateUserSql = `
-          UPDATE db_csrkonsel.users
-          SET username = ?, password = ?
-          WHERE id = ?
-        `;
-        db.query(updateUserSql, [username.trim(), hashedPassword, usersId], (err3, userResult) => {
-          if (err3) {
-            console.error('Error update user:', err3);
-            return res.status(500).json({ success: false, message: 'Gagal update akun user', error: err3.message });
-          }
-
-          const updatePerusahaanSql = `
-            UPDATE db_csrkonsel.perusahaan
-            SET status = 'terima',
-            catatan_admin = 'Mitra/Perusahaan Telah disetujui'
-            WHERE id = ? AND status = 'pending'
-          `;
-          db.query(updatePerusahaanSql, [id], (err4, perusahaanResult) => {
-            if (err4) {
-              console.error('Error update perusahaan:', err4);
-              return res.status(500).json({ success: false, message: 'Gagal update status perusahaan', error: err4.message });
-            }
-
-            if (perusahaanResult.affectedRows === 0) {
-              return res.status(404).json({ success: false, message: 'Perusahaan tidak ditemukan atau sudah diproses' });
-            }
-
-            res.json({ success: true, message: 'Registrasi disetujui dan akun diaktifkan' });
-          });
-        });
-      });
+      SELECT username FROM (
+        SELECT username FROM db_csrkonsel.users
+        UNION
+        SELECT username FROM egov.users
+      ) AS all_users
+      WHERE username = ? LIMIT 1
+    `;
+    const usernameExists = await new Promise((resolve, reject) => {
+      db.query(checkUsernameSql, [username.trim()], (err, rows) => err ? reject(err) : resolve(rows && rows.length > 0));
     });
-  } catch (error) {
-    console.error('Error approve registrasi:', error);
-    res.status(500).json({ success: false, message: 'Terjadi kesalahan server', error: error.message });
+
+    if (usernameExists) {
+      return res.status(400).json({ success: false, message: 'Username sudah digunakan, silakan pilih username lain' });
+    }
+
+    // 2) ambil users_id perusahaan (cukup memastikan ada dan status pending)
+    const getPerusahaanSql = `SELECT users_id, nama, email AS email_perusahaan FROM db_csrkonsel.perusahaan WHERE id = ? LIMIT 1`;
+    const perusahaanRows = await new Promise((resolve, reject) => {
+      db.query(getPerusahaanSql, [id], (err, rows) => err ? reject(err) : resolve(rows));
+    });
+
+    if (!perusahaanRows || perusahaanRows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Perusahaan tidak ditemukan' });
+    }
+    const perusahaan = perusahaanRows[0];
+    const usersId = perusahaan.users_id;
+
+    // 3) hash password & update users table (simpan hash)
+    const hashedPassword = await bcrypt.hash(password.trim(), 12);
+    await new Promise((resolve, reject) => {
+      const updateUserSql = `UPDATE db_csrkonsel.users SET username = ?, password = ? WHERE id = ?`;
+      db.query(updateUserSql, [username.trim(), hashedPassword, usersId], (err, result) => (err ? reject(err) : resolve(result)));
+    });
+
+    // 4) update status perusahaan -> terima
+    await new Promise((resolve, reject) => {
+      const updatePerusahaanSql = `
+        UPDATE db_csrkonsel.perusahaan
+        SET status = 'terima', catatan_admin = 'Mitra/Perusahaan telah disetujui oleh admin'
+        WHERE id = ?`;
+      db.query(updatePerusahaanSql, [id], (err, result) => (err ? reject(err) : resolve(result)));
+    });
+
+    // 5) ambil info PIC jika tersedia di users (opsional)
+    const picRows = await new Promise((resolve, reject) => {
+      const sql = `SELECT nama AS nama_pic, email AS email_pic FROM db_csrkonsel.users WHERE id = ? LIMIT 1`;
+      db.query(sql, [usersId], (err, rows) => (err ? reject(err) : resolve(rows)));
+    });
+    const pic = (picRows && picRows[0]) ? picRows[0] : null;
+
+    // 6) susun daftar email tujuan (perusahaan + PIC jika berbeda)
+    const toEmails = [];
+    if (perusahaan.email_perusahaan) toEmails.push(perusahaan.email_perusahaan);
+    if (pic && pic.email_pic && pic.email_pic !== perusahaan.email_perusahaan) toEmails.push(pic.email_pic);
+
+    // 7) siapkan konten email (mengirim password plain sesuai permintaan)
+    if (toEmails.length > 0) {
+      const safeNama = escapeHtml(perusahaan.nama || 'Mitra');
+      const safeUsername = escapeHtml(username.trim());
+      const safePassword = escapeHtml(password.trim()); // akan dikirim plain dalam email
+      const frontendBase = (process.env.FRONTEND_URL || process.env.ADMIN_URL || 'https://admin-csr.konaweselatankab.go.id').replace(/\/$/, '');
+      const loginUrl = `${frontendBase}/#/login`;
+
+      const subject = `Akun Anda Telah Diaktifkan — ${safeNama}`;
+      const html = `
+        <!doctype html><html><body style="font-family: Inter, Arial, sans-serif; color:#222;">
+          <div style="max-width:640px;margin:16px auto;padding:18px;border:1px solid #eee;border-radius:8px;">
+            <h3 style="margin-top:0;">Akun Anda Telah Diaktifkan</h3>
+            <p>Yth. <strong>${safeNama}</strong>,</p>
+            <p>Akun Anda pada sistem CSR-SETARA telah diaktifkan oleh Administrator. Silakan gunakan data berikut untuk masuk:</p>
+            <table style="width:100%;font-size:14px;">
+              <tr><td style="padding:6px 0;width:140px;"><strong>Username</strong></td><td style="padding:6px 0;">${safeUsername}</td></tr>
+              <tr><td style="padding:6px 0;"><strong>Password</strong></td><td style="padding:6px 0;">${safePassword}</td></tr>
+            </table>
+            <p style="margin-top:12px;">Masuk ke <a href="${loginUrl}">${loginUrl}</a>. Setelah masuk, kami sarankan segera mengganti kata sandi Anda.</p>
+            <p style="font-size:13px;color:#666;margin-top:12px;">Jika Anda tidak mengharapkan email ini, segera hubungi administrator.</p>
+            <hr style="border:none;border-top:1px solid #eee;margin:12px 0;">
+            <div style="font-size:12px;color:#888;">CSR-SETARA — Pemerintah Kabupaten Konawe Selatan</div>
+          </div>
+        </body></html>
+      `;
+
+      // Kirim email (asynchronous). Jangan log password plain.
+      sendMail({ to: toEmails, subject, html })
+        .then(infoMail => {
+          console.log('Email notifikasi aktivasi terkirim ke', toEmails.join(', '));
+        })
+        .catch(errMail => {
+          // catat error, tapi jangan sertakan password
+          console.error('Gagal mengirim email aktivasi:', errMail && errMail.message ? errMail.message : errMail);
+        });
+    } else {
+      console.warn('approveRegistrasi: tidak ada alamat email tujuan untuk pengiriman notifikasi', id);
+    }
+
+    // 8) respon ke client
+    return res.json({ success: true, message: 'Registrasi disetujui, username & password telah dikirim melalui email (jika ada alamat email).' });
+
+  } catch (err) {
+    console.error('Error approveRegistrasi:', err && err.message ? err.message : err);
+    return res.status(500).json({ success: false, message: 'Terjadi kesalahan server' });
   }
 });
+
 
 
 
