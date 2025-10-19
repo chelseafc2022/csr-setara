@@ -760,28 +760,128 @@ router.post("/hapusmitra", (req, res) => {
   });
 });
 
+// router.post('/tolakRegistrasi', (req, res) => {
+//   const { id, catatan_admin } = req.body; 
+//   if (!id || !catatan_admin || catatan_admin.trim() === '') {
+//     return res.status(400).json({ success: false, message: 'ID dan catatan admin diperlukan' });
+//   }
+
+//   const query = `
+//     UPDATE db_csrkonsel.perusahaan 
+//     SET status = 'ditolak', catatan_admin = ? 
+//     WHERE id = ? AND status = 'pending'
+//   `;
+//   db.query(query, [catatan_admin.trim(), id], (err, result) => {
+//     if (err) {
+//       console.error('Error tolak registrasi:', err);
+//       return res.status(500).json({ success: false, message: 'Gagal tolak registrasi', error: err.message });
+//     }
+//     if (result.affectedRows === 0) {
+//       return res.status(404).json({ success: false, message: 'Registrasi tidak ditemukan atau sudah diproses' });
+//     }
+//     res.json({ success: true, message: 'Registrasi berhasil ditolak dan catatan disimpan' });
+//   });
+// });
+
 router.post('/tolakRegistrasi', (req, res) => {
   const { id, catatan_admin } = req.body; 
   if (!id || !catatan_admin || catatan_admin.trim() === '') {
     return res.status(400).json({ success: false, message: 'ID dan catatan admin diperlukan' });
   }
 
-  const query = `
-    UPDATE db_csrkonsel.perusahaan 
-    SET status = 'ditolak', catatan_admin = ? 
-    WHERE id = ? AND status = 'pending'
-  `;
-  db.query(query, [catatan_admin.trim(), id], (err, result) => {
-    if (err) {
-      console.error('Error tolak registrasi:', err);
-      return res.status(500).json({ success: false, message: 'Gagal tolak registrasi', error: err.message });
+  // 1) ambil data perusahaan dulu (nama, email, users_id)
+  const getPerusahaanSql = `SELECT id, users_id, nama, email AS email_perusahaan FROM db_csrkonsel.perusahaan WHERE id = ? LIMIT 1`;
+  db.query(getPerusahaanSql, [id], (errGet, rowsGet) => {
+    if (errGet) {
+      console.error('Error ambil perusahaan sebelum tolak:', errGet);
+      return res.status(500).json({ success: false, message: 'Gagal ambil data perusahaan', error: errGet.message });
     }
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ success: false, message: 'Registrasi tidak ditemukan atau sudah diproses' });
+    if (!rowsGet || rowsGet.length === 0) {
+      return res.status(404).json({ success: false, message: 'Perusahaan tidak ditemukan' });
     }
-    res.json({ success: true, message: 'Registrasi berhasil ditolak dan catatan disimpan' });
+
+    const perusahaan = rowsGet[0];
+
+    // 2) update status jadi ditolak dan simpan catatan_admin (hanya jika status pending)
+    const query = `
+      UPDATE db_csrkonsel.perusahaan 
+      SET status = 'ditolak', catatan_admin = ? 
+      WHERE id = ? AND status = 'pending'
+    `;
+    db.query(query, [catatan_admin.trim(), id], (err, result) => {
+      if (err) {
+        console.error('Error tolak registrasi (update):', err);
+        return res.status(500).json({ success: false, message: 'Gagal tolak registrasi', error: err.message });
+      }
+      if (result.affectedRows === 0) {
+        // Bisa jadi sudah diproses sebelumnya
+        return res.status(404).json({ success: false, message: 'Registrasi tidak ditemukan atau sudah diproses' });
+      }
+
+      // 3) prepare response ke client (kirim sekarang) — mail dikirim asinkron
+      res.json({ success: true, message: 'Registrasi berhasil ditolak dan catatan disimpan' });
+
+      // 4) ambil data PIC (opsional) untuk email (tidak blocking)
+      (async () => {
+        try {
+          const usersId = perusahaan.users_id;
+
+          let pic = null;
+          if (usersId) {
+            const picRows = await new Promise((resolve, reject) => {
+              const sql = `SELECT nama AS nama_pic, email AS email_pic FROM db_csrkonsel.users WHERE id = ? LIMIT 1`;
+              db.query(sql, [usersId], (e, r) => e ? reject(e) : resolve(r));
+            });
+            pic = (picRows && picRows[0]) ? picRows[0] : null;
+          }
+
+          // 5) susun daftar email tujuan (perusahaan + PIC jika berbeda)
+          const toEmails = [];
+          if (perusahaan.email_perusahaan) toEmails.push(perusahaan.email_perusahaan);
+          if (pic && pic.email_pic && pic.email_pic !== perusahaan.email_perusahaan) toEmails.push(pic.email_pic);
+
+          if (toEmails.length === 0) {
+            console.warn('tolakRegistrasi: tidak ada email perusahaan/PIC untuk dikirimi notifikasi', id);
+            return;
+          }
+
+          // 6) siapkan email (HTML)
+          const safeNama = escapeHtml(perusahaan.nama || 'Mitra');
+          const safeCatatan = escapeHtml(catatan_admin.trim());
+          const frontendBase = (process.env.FRONTEND_URL || process.env.ADMIN_URL || 'https://admin-csr.konaweselatankab.go.id').replace(/\/$/, '');
+          const helpUrl = `${frontendBase}/#/kontak`; // ubah bila perlu ke halaman bantuan/contact
+          const subject = `Registrasi Anda Ditolak — ${safeNama}`;
+          const html = `
+            <!doctype html><html><body style="font-family: Inter, Arial, sans-serif; color:#222;">
+              <div style="max-width:640px;margin:16px auto;padding:18px;border:1px solid #eee;border-radius:8px;">
+                <h3 style="margin-top:0;color:#c0392b;">Permohonan Registrasi Ditolak</h3>
+                <p>Yth. <strong>${safeNama}</strong>,</p>
+                <p>Terima kasih atas pengajuan registrasi Anda. Mohon maaf, pengajuan <strong>tidak dapat kami setujui</strong> dengan alasan:</p>
+                <blockquote style="background:#f8f9fa;border-left:4px solid #e74c3c;padding:10px 12px;color:#333;margin:12px 0;">${safeCatatan}</blockquote>
+                <p>Silakan periksa kembali dokumen atau data pengajuan Anda dan ajukan kembali apabila sudah diperbaiki.</p>
+                <p style="margin-top:12px;">Jika ada pertanyaan, silakan hubungi admin dengan cara membalas Email ini.</p>
+                <hr style="border:none;border-top:1px solid #eee;margin:12px 0;">
+                <div style="font-size:12px;color:#888;">CSR-SETARA — Pemerintah Kabupaten Konawe Selatan</div>
+              </div>
+            </body></html>
+          `;
+
+          // 7) kirim email (non-blocking)
+          try {
+            const infoMail = await sendMail({ to: toEmails, subject, html, replyTo: (process.env.NOTIF_TO || undefined) });
+            console.log('Notif tolakRegistrasi terkirim ke:', toEmails.join(', '), 'info:', infoMail && infoMail.messageId ? infoMail.messageId : '(no messageId)');
+          } catch (errMail) {
+            console.error('Gagal kirim notifikasi tolakRegistrasi:', errMail && errMail.message ? errMail.message : errMail);
+          }
+        } catch (errOverall) {
+          console.error('Error proses notifikasi tolakRegistrasi (internal):', errOverall && errOverall.message ? errOverall.message : errOverall);
+        }
+      })();
+
+    });
   });
 });
+
 
 
 // router.post('/approveRegistrasi', async (req, res) => {
