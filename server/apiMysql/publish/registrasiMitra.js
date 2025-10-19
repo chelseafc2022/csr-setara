@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../../db/MySql/umum');  // Pastikan koneksi database benar
-const upload = require('../../db/multer/pdf');  // Impor Multer (pastikan path benar)
+const db = require('../../db/MySql/umum');  
+const upload = require('../../db/multer/pdf'); 
 
 function generateId() {
   return 'usr_' + Date.now().toString(36) + Math.random().toString(36).substring(2, 10);
@@ -22,14 +22,12 @@ router.post("/", upload.single('dokumen'), async (req, res) => {
       alamat
     } = req.body;
 
-    const dokumenFile = req.file;  // File dokumen yang diupload
+    const dokumenFile = req.file; 
 
-    // Validasi: Pastikan file diupload
     if (!dokumenFile) {
       return res.status(400).json({ success: false, message: "Dokumen wajib diupload!" });
     }
 
-    // Validasi tambahan: Pastikan data PIC lengkap
     if (!nama || !jabatan || !pic_email || !pic_hp) {
       return res.status(400).json({ success: false, message: "Data PIC (nama, jabatan, email, HP) wajib diisi!" });
     }
@@ -48,7 +46,6 @@ router.post("/", upload.single('dokumen'), async (req, res) => {
 
       const newUserId = userResult.insertId;
 
-      // Simpan perusahaan dengan users_id yang baru dibuat
       const sqlPending = `
         INSERT INTO perusahaan 
         (users_id, nama, bidang_usaha_id, email, hp, alamat, file_name, status, catatan_admin, createdAt)
@@ -82,6 +79,5 @@ router.post("/", upload.single('dokumen'), async (req, res) => {
   }
 });
 
-// ... kode asli Anda tetap sama di bawah ...
 
 module.exports = router;
