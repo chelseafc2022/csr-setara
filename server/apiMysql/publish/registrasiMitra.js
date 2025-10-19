@@ -64,7 +64,7 @@ router.post("/", upload.single('dokumen'), async (req, res) => {
       db.query(sqlPending, params, (err, result) => {
         if (err) {
           console.error("Error inserting perusahaan: ", err);
-          // Jika gagal simpan perusahaan, hapus user yang sudah dibuat (rollback sederhana)
+        
           db.query("DELETE FROM db_csrkonsel.users WHERE id = ?", [newUserId], () => {});
           return res.status(500).json({ success: false, error: "Gagal menyimpan data perusahaan: " + err.message });
         }
