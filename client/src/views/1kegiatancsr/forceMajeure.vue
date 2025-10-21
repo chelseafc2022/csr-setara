@@ -170,13 +170,13 @@
             <hr class="hrpagin2">
 
             <!-- BIDANG CSR -->
-            <span class="h_lable">Bidang CSR Force Majeure</span>
+            <span class="h_lable">Bidang CSR Force Majeure*</span>
             <q-select v-model="form.bidang_force_id" :options="list_bidang" option-value="id" option-label="uraian"
             required emit-value map-options outlined square dense class="bg-white margin_btn" />
 
 
             <!-- NAMA CSR -->
-            <span class="h_lable">Nama CSR</span>
+            <span class="h_lable">Nama CSR*</span>
             <q-input v-model="form.nama_csr" outlined required square :dense="true" class="bg-white margin_btn" />
 
             <!-- DESKRIPSI CSR -->
@@ -187,16 +187,16 @@
             <!-- JUMLAH KEBUTUHAN -->
             <div class="row q-col-gutter-md">
               <div class="col-4">
-                <span class="h_lable">Jumlah</span>
+                <span class="h_lable">Jumlah*</span>
                 <q-input v-model="form.jumlah" type="number" outlined required square :dense="true"
                   class="bg-white margin_btn" />
               </div>
               <div class="col-4">
-                <span class="h_lable">Satuan</span>
+                <span class="h_lable">Satuan*</span>
                 <q-input v-model="form.satuan" outlined square required :dense="true" class="bg-white margin_btn" />
               </div>
               <div class="col-4">
-                <span class="h_lable">Nilai Perkiraan</span>
+                <span class="h_lable">Nilai Perkiraan*</span>
                 <q-input v-model="form.nilai" type="number" outlined required square :dense="true" class="bg-white margin_btn" />
               </div>
             </div>
@@ -204,12 +204,12 @@
             <!-- TANGGAL MULAI & SELESAI -->
             <div class="row q-col-gutter-md">
               <div class="col-6">
-                <span class="h_lable">Tanggal Mulai</span>
+                <span class="h_lable">Tanggal Mulai*</span>
                 <q-input v-model="form.tanggal_mulai" type="date" outlined required square :dense="true"
                   class="bg-white margin_btn" />
               </div>
               <div class="col-6">
-                <span class="h_lable">Tanggal Selesai</span>
+                <span class="h_lable">Tanggal Selesai*</span>
                 <q-input v-model="form.tanggal_selesai" type="date" outlined required square :dense="true"
                   class="bg-white margin_btn" />
               </div>
@@ -234,7 +234,7 @@
 
             <!-- FILE UPLOAD -->
             
-            <span class="h_lable">Foto Kegiatan</span>
+            <span class="h_lable">Foto Kegiatan*</span>
             <q-file v-model="form.file" label="Pilih File" accept="image/*" outlined square dense required
               class="bg-white margin_btn" :rules="[
               val => !!val || 'Foto kegiatan wajib diisi',
