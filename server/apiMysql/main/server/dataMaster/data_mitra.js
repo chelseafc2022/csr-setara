@@ -515,64 +515,18 @@ router.post('/viewByUser', (req, res) => {
   });
 });
 
-router.post('/listRegis', (req, res) => {
-  const { page_limit = 10, data_ke = 0, users_id, master_bidang_usaha } = req.body;
-  const offset = data_ke;
-
-  let query = `
-  SELECT p.id, p.users_id, p.nama, b.uraian AS bidang_usaha, p.status, p.catatan_admin,
-         p.email, p.hp, p.alamat, p.file_name,
-         u.username, u.nama AS nama_pic, u.jabatan, u.email AS email_pic, u.hp AS hp_pic
-  FROM perusahaan p
-  LEFT JOIN users u ON u.id = p.users_id
-  LEFT JOIN master_bidang_usaha b ON b.id = p.bidang_usaha_id
-  WHERE 1=1
-`;
-
-  const params = [];
-
-  if (master_bidang_usaha) {
-    query += " AND p.bidang_usaha_id = ?";
-    params.push(master_bidang_usaha);
-  }
-
-  if (users_id) {
-    query += " AND p.users_id = ?";
-    params.push(users_id);
-  }
-
-  query += " ORDER BY p.id ASC LIMIT ? OFFSET ?";
-  params.push(parseInt(page_limit), parseInt(offset));
-
-  db.query(query, params, (err, data) => {
-    if (err) return res.status(500).json({ success: false, message: err.message });
-
-    db.query('SELECT COUNT(*) as total FROM perusahaan', (err2, totalRes) => {
-      if (err2) return res.status(500).json({ success: false, message: err2.message });
-
-      res.json({
-        success: true,
-        data: data,
-        jml_data: data.length,
-        total_data: totalRes[0].total
-      });
-    });
-  });
-});
-
-
 // router.post('/listRegis', (req, res) => {
 //   const { page_limit = 10, data_ke = 0, users_id, master_bidang_usaha } = req.body;
 //   const offset = data_ke;
 
 //   let query = `
-// SELECT p.id, p.users_id, p.nama, b.uraian AS bidang_usaha,
-//        p.email, p.hp, p.alamat, p.status,  // Tambahkan p.status di sini
-//        u.username, u.nama AS nama_pic, u.jabatan, u.email AS email_pic, u.hp AS hp_pic
-// FROM perusahaan p
-// LEFT JOIN users u ON u.id = p.users_id
-// LEFT JOIN master_bidang_usaha b ON b.id = p.bidang_usaha_id
-// WHERE 1=1
+//   SELECT p.id, p.users_id, p.nama, b.uraian AS bidang_usaha, p.status, p.catatan_admin,
+//          p.email, p.hp, p.alamat, p.file_name,
+//          u.username, u.nama AS nama_pic, u.jabatan, u.email AS email_pic, u.hp AS hp_pic
+//   FROM perusahaan p
+//   LEFT JOIN users u ON u.id = p.users_id
+//   LEFT JOIN master_bidang_usaha b ON b.id = p.bidang_usaha_id
+//   WHERE 1=1
 // `;
 
 //   const params = [];
@@ -605,6 +559,71 @@ router.post('/listRegis', (req, res) => {
 //     });
 //   });
 // });
+
+router.post('/listRegis', (req, res) => {
+  const { page_limit = 10, data_ke = 0, users_id, master_bidang_usaha, tipe } = req.body;
+  const offset = data_ke;
+
+  console.log('Received tipe:', tipe);  // Debug: Cek tipe diterima
+  console.log('Received users_id:', users_id);  // Debug: Cek users_id diterima
+
+  // Validasi: Jika tipe bukan 1 atau 5 (admin), paksa filter users_id
+  if (tipe !== 1 && tipe !== 5) {
+    if (!users_id) {
+      console.log('Error: users_id required for tipe', tipe);  // Debug
+      return res.status(400).json({ success: false, message: 'users_id required for non-admin' });
+    }
+  }
+
+  let query = `
+    SELECT p.id, p.users_id, p.nama, b.uraian AS bidang_usaha, p.status, p.catatan_admin,
+           p.email, p.hp, p.alamat, p.file_name,
+           u.username, u.nama AS nama_pic, u.jabatan, u.email AS email_pic, u.hp AS hp_pic
+    FROM perusahaan p
+    LEFT JOIN users u ON u.id = p.users_id
+    LEFT JOIN master_bidang_usaha b ON b.id = p.bidang_usaha_id
+    WHERE 1=1
+  `;
+
+  const params = [];
+  const totalParams = [];  // Untuk query total_data
+
+  if (master_bidang_usaha) {
+    query += " AND p.bidang_usaha_id = ?";
+    params.push(master_bidang_usaha);
+    totalParams.push(master_bidang_usaha);
+  }
+
+  if (users_id) {
+    query += " AND p.users_id = ?";
+    params.push(users_id);
+    totalParams.push(users_id);
+  }
+
+  query += " ORDER BY p.id ASC LIMIT ? OFFSET ?";
+  params.push(parseInt(page_limit), parseInt(offset));
+
+  // Query total_data dengan filter yang sama
+  let totalQuery = "SELECT COUNT(*) as total FROM perusahaan p WHERE 1=1";
+  if (master_bidang_usaha) totalQuery += " AND p.bidang_usaha_id = ?";
+  if (users_id) totalQuery += " AND p.users_id = ?";
+
+  db.query(query, params, (err, data) => {
+    if (err) return res.status(500).json({ success: false, message: err.message });
+
+    db.query(totalQuery, totalParams, (err2, totalRes) => {
+      if (err2) return res.status(500).json({ success: false, message: err2.message });
+
+      console.log('Applied filter - users_id:', users_id, 'tipe:', tipe);  // Debug: Cek filter diterapkan
+      res.json({
+        success: true,
+        data: data,
+        jml_data: data.length,
+        total_data: totalRes[0].total
+      });
+    });
+  });
+});
 
 
 function hapus_file(file) {
@@ -789,7 +808,6 @@ router.post('/tolakRegistrasi', (req, res) => {
     return res.status(400).json({ success: false, message: 'ID dan catatan admin diperlukan' });
   }
 
-  // 1) ambil data perusahaan dulu (nama, email, users_id)
   const getPerusahaanSql = `SELECT id, users_id, nama, email AS email_perusahaan FROM db_csrkonsel.perusahaan WHERE id = ? LIMIT 1`;
   db.query(getPerusahaanSql, [id], (errGet, rowsGet) => {
     if (errGet) {
@@ -802,7 +820,6 @@ router.post('/tolakRegistrasi', (req, res) => {
 
     const perusahaan = rowsGet[0];
 
-    // 2) update status jadi ditolak dan simpan catatan_admin (hanya jika status pending)
     const query = `
       UPDATE db_csrkonsel.perusahaan 
       SET status = 'ditolak', catatan_admin = ? 
@@ -814,14 +831,11 @@ router.post('/tolakRegistrasi', (req, res) => {
         return res.status(500).json({ success: false, message: 'Gagal tolak registrasi', error: err.message });
       }
       if (result.affectedRows === 0) {
-        // Bisa jadi sudah diproses sebelumnya
         return res.status(404).json({ success: false, message: 'Registrasi tidak ditemukan atau sudah diproses' });
       }
 
-      // 3) prepare response ke client (kirim sekarang) — mail dikirim asinkron
       res.json({ success: true, message: 'Registrasi berhasil ditolak dan catatan disimpan' });
 
-      // 4) ambil data PIC (opsional) untuk email (tidak blocking)
       (async () => {
         try {
           const usersId = perusahaan.users_id;
@@ -835,7 +849,6 @@ router.post('/tolakRegistrasi', (req, res) => {
             pic = (picRows && picRows[0]) ? picRows[0] : null;
           }
 
-          // 5) susun daftar email tujuan (perusahaan + PIC jika berbeda)
           const toEmails = [];
           if (perusahaan.email_perusahaan) toEmails.push(perusahaan.email_perusahaan);
           if (pic && pic.email_pic && pic.email_pic !== perusahaan.email_perusahaan) toEmails.push(pic.email_pic);
@@ -845,11 +858,10 @@ router.post('/tolakRegistrasi', (req, res) => {
             return;
           }
 
-          // 6) siapkan email (HTML)
           const safeNama = escapeHtml(perusahaan.nama || 'Mitra');
           const safeCatatan = escapeHtml(catatan_admin.trim());
           const frontendBase = (process.env.FRONTEND_URL || process.env.ADMIN_URL || 'https://admin-csr.konaweselatankab.go.id').replace(/\/$/, '');
-          const helpUrl = `${frontendBase}/#/kontak`; // ubah bila perlu ke halaman bantuan/contact
+          const helpUrl = `${frontendBase}/#/kontak`;
           const subject = `Registrasi Anda Ditolak — ${safeNama}`;
           const html = `
             <!doctype html><html><body style="font-family: Inter, Arial, sans-serif; color:#222;">
@@ -866,7 +878,6 @@ router.post('/tolakRegistrasi', (req, res) => {
             </body></html>
           `;
 
-          // 7) kirim email (non-blocking)
           try {
             const infoMail = await sendMail({ to: toEmails, subject, html, replyTo: (process.env.NOTIF_TO || undefined) });
             console.log('Notif tolakRegistrasi terkirim ke:', toEmails.join(', '), 'info:', infoMail && infoMail.messageId ? infoMail.messageId : '(no messageId)');
