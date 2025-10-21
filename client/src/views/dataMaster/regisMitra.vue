@@ -531,41 +531,84 @@ export default {
     //     });
     // },
 
-    getView() {
-      const body = {
-        page_limit: this.page_limit,
-        data_ke: (this.page_first - 1) * this.page_limit,
-        cari_value: this.cari_value,
-        master_bidang_usaha: this.filterku.master_bidang_usaha
-      };
+    // getView() {
+    //   const body = {
+    //     page_limit: this.page_limit,
+    //     data_ke: (this.page_first - 1) * this.page_limit,
+    //     cari_value: this.cari_value,
+    //     master_bidang_usaha: this.filterku.master_bidang_usaha,
+    //   };
 
-      fetch(this.$store.state.url.DATA_MITRA + "listRegis", {
-        method: "POST",
-        headers: {
-          "content-type": "application/json",
-          authorization: "kikensbatara " + localStorage.token
-        },
-        body: JSON.stringify(body)
-      })
-        .then(res => res.json())
-        .then(res_data => {
-          console.log("Respons API listRegis:", res_data); 
-          if (res_data.data && res_data.data.length > 0) {
-            res_data.data.forEach(item => {
-              // console.log("Item data.status:", item.status);  
-            });
-          } else {
-            // console.log("list_data kosong atau tidak ada data");
-          }
-          this.list_data = res_data.data;
-          this.jml_data = res_data.jml_data;
-          this.total_data = res_data.total_data;
-          this.page_last = Math.ceil(this.total_data / this.page_limit);
-        })
-        .catch(error => {
-          console.error("Error fetching data:", error);
-        });
+    //   fetch(this.$store.state.url.DATA_MITRA + "listRegis", {
+    //     method: "POST",
+    //     headers: {
+    //       "content-type": "application/json",
+    //       authorization: "kikensbatara " + localStorage.token
+    //     },
+    //     body: JSON.stringify(body)
+    //   })
+    //     .then(res => res.json())
+    //     .then(res_data => {
+    //       // console.log("Respons API listRegis:", res_data); 
+    //       if (res_data.data && res_data.data.length > 0) {
+    //         res_data.data.forEach(item => {
+    //           // console.log("Item data.status:", item.status);  
+    //         });
+    //       } else {
+    //         // console.log("list_data kosong atau tidak ada data");
+    //       }
+    //       this.list_data = res_data.data;
+    //       this.jml_data = res_data.jml_data;
+    //       this.total_data = res_data.total_data;
+    //       this.page_last = Math.ceil(this.total_data / this.page_limit);
+    //     })
+    //     .catch(error => {
+    //       console.error("Error fetching data:", error);
+    //     });
+    // },
+    getView() {
+  const body = {
+    page_limit: this.page_limit,
+    data_ke: (this.page_first - 1) * this.page_limit,
+    cari_value: this.cari_value,
+    master_bidang_usaha: this.filterku.master_bidang_usaha,
+    tipe: this.tipe  // Tambahkan tipe user
+  };
+
+  // Jika tipe 4 (mitra), ambil users_id dari localStorage dan kirim
+  if (this.tipe === 4) {
+    const profile = JSON.parse(localStorage.profile);
+    console.log('Profile structure:', profile);  // Debug: Cek struktur localStorage
+    body.users_id = profile._id;  // Ubah ke _id (atau profile.profile._id jika nested)
+  }
+
+  fetch(this.$store.state.url.DATA_MITRA + "listRegis", {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      authorization: "kikensbatara " + localStorage.token
     },
+    body: JSON.stringify(body)
+  })
+    .then(res => res.json())
+    .then(res_data => {
+      // console.log("Respons API listRegis:", res_data); 
+      if (res_data.data && res_data.data.length > 0) {
+        res_data.data.forEach(item => {
+          // console.log("Item data.status:", item.status);  
+        });
+      } else {
+        // console.log("list_data kosong atau tidak ada data");
+      }
+      this.list_data = res_data.data;
+      this.jml_data = res_data.jml_data;
+      this.total_data = res_data.total_data;
+      this.page_last = Math.ceil(this.total_data / this.page_limit);
+    })
+    .catch(error => {
+      console.error("Error fetching data:", error);
+    });
+},
     addData() {
       this.btn_add = true;
       fetch("/api/perusahaan/add", {
