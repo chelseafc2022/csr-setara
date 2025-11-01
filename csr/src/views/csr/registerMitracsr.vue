@@ -109,11 +109,14 @@
                   </div>
 
                   <div class="mb-3">
-                    <label class="form-label">
+                    <button type="button" class="btn mt-2 mb-3" @click="downloadTemplate"> 📥 Download Format Dokumen</button>
+                    <!-- <label class="form-label">
                       Upload Dokumen (Wajib, sesuai syarat admin)*
-                    </label>
+                    </label> -->
+                    
                     <input type="file" class="form-control" accept="application/pdf" @change="handleFileUpload"
                       required>
+                    <small class="form-text text-muted">Pastikan dokumen sesuai dengan format yang ditentukan.</small>
                   </div>
                 </div>
               </div>
@@ -219,6 +222,15 @@ export default {
 
     handleFileUpload(event) {
       this.form.file_name = event.target.files[0];  // Simpan file yang dipilih
+    },
+
+    downloadTemplate() {
+      // Asumsi URL template dokumen adalah '/assets/templates/csr_document_template.pdf'
+      // Ganti dengan URL yang sesuai jika berbeda (misalnya dari API atau store)
+      const link = document.createElement('a');
+      link.href = '/assets/template/Form _Permohonan_Admin CSR-Setara _Perusahaan.pdf'; // Path ke file template
+      link.download = 'format_dokumen_csr.pdf'; // Nama file saat didownload
+      link.click();
     },
 
 
