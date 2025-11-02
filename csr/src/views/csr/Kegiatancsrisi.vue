@@ -17,7 +17,7 @@
                                 <h5 class="title">Informasi Program</h5>
                                 <hr style="border: 2px solid #0007cd;">
                                 <a :href="csrData ? getImage(csrData) : '/default-image.png'" class="shine-animate">
-                                <img :src="csrData ? getImage(csrData) : '/default-image.png'" alt="CSR Image">
+                                    <img :src="csrData ? getImage(csrData) : '/default-image.png'" alt="CSR Image">
                                 </a>
                             </div>
                         </div>
@@ -104,12 +104,16 @@
                                 <div v-if="csrData" class="card-body d-flex">
                                     <!-- Status -->
                                     <div class="flex-fill me-2">
-    <h6 class="title mb-1">Status</h6>
-    <span v-if="csrData.status === 1" class="badge text-bg-warning">Program CSR Baru</span>
-    <button v-else-if="csrData.status === 2" @click="viewMitra(csrData.id)" class="badge text-bg-primary">Dalam Pengerjaan</button>
-    <button v-else-if="csrData.status === 3" @click="viewMitra(csrData.id)" class="badge text-bg-secondary">Pengerjaan Sebagian</button>
-    <button v-else-if="csrData.status === 4" @click="viewMitra(csrData.id)" class="badge text-bg-success">Selesai</button>
-</div>
+                                        <h6 class="title mb-1">Status</h6>
+                                        <span v-if="csrData.status === 1" class="badge text-bg-warning">Program CSR
+                                            Baru</span>
+                                        <button v-else-if="csrData.status === 2" @click="viewMitra(csrData.id)"
+                                            class="badge text-bg-primary">Dalam Pengerjaan</button>
+                                        <button v-else-if="csrData.status === 3" @click="viewMitra(csrData.id)"
+                                            class="badge text-bg-secondary">Pengerjaan Sebagian</button>
+                                        <button v-else-if="csrData.status === 4" @click="viewMitra(csrData.id)"
+                                            class="badge text-bg-success">Selesai</button>
+                                    </div>
 
                                     <!-- Jumlah Tersedia -->
                                     <div class="flex-fill me-2">
@@ -125,12 +129,13 @@
                                             disabled>
                                     </div>
                                 </div>
-                                <div v-if="csrData && (csrData.status === 2 || csrData.status === 3 || csrData.status === 4)" class="mt-3">
-                                    <button @click="viewMitra(csrData.id)" class="btn btn-outline-primary btn-sm w-100" 
-                                            style="font-size: 9pt; border-radius: 6px; transition: all 0.3s ease;">
+                                <!-- <div v-if="csrData && (csrData.status === 2 || csrData.status === 3 || csrData.status === 4)"
+                                    class="mt-3">
+                                    <button @click="viewMitra(csrData.id)" class="btn btn-outline-primary btn-sm w-100"
+                                        style="font-size: 9pt; border-radius: 6px; transition: all 0.3s ease;">
                                         <i class="fas fa-eye"></i> Lihat Mitra
                                     </button>
-                                </div>
+                                </div> -->
                             </div>
 
                         </div>
@@ -212,14 +217,15 @@
                             <p class="mt-2">Tidak ada mitra yang terdaftar untuk kegiatan ini.</p>
                         </div>
                         <ul v-else class="list-group">
-                            <li v-for="(mitra, idx) in selectedMitra" :key="idx" class="list-group-item d-flex justify-content-between align-items-center">
+                            <li v-for="(mitra, idx) in selectedMitra" :key="idx"
+                                class="list-group-item d-flex justify-content-between align-items-center">
                                 <span><strong>{{ mitra.nama_mitra }}</strong></span>
-                                <span class="badge bg-primary">{{ formatRupiah(mitra.nilai) }}</span>
+                                <span class="badge bg-primary">{{ mitra.jumlah_ambil}} {{ mitra.satuan }} - {{ formatRupiah( mitra.nilai)}}/{{ mitra.satuan }} </span>
                             </li>
                         </ul>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                        <button type="button" class="btn" data-bs-dismiss="modal">Tutup</button>
                     </div>
                 </div>
             </div>
@@ -293,34 +299,34 @@ export default {
             }
         },
 
-       // Method untuk lihat mitra
-async viewMitra(csrId) {
-    this.isLoadingMitra = true;
-    this.selectedMitra = [];
-    try {
-        // Update endpoint ke "lihatmitra" dengan query string id
-        const res = await fetch(this.$store.state.URL.KEGIATAN_CSR + "lihatmitra?id=" + csrId, {
-            method: "GET",
-            headers: { "Content-Type": "application/json" }
-        });
-        const data = await res.json();
-        // Parsing respons backend: { success: true, data: rows }
-        if (data.success) {
-            this.selectedMitra = data.data || [];
-        } else {
-            console.error("Error from backend:", data.message);
+        // Method untuk lihat mitra
+        async viewMitra(csrId) {
+            this.isLoadingMitra = true;
             this.selectedMitra = [];
+            try {
+                // Update endpoint ke "lihatmitra" dengan query string id
+                const res = await fetch(this.$store.state.URL.KEGIATAN_CSR + "lihatmitra?id=" + csrId, {
+                    method: "GET",
+                    headers: { "Content-Type": "application/json" }
+                });
+                const data = await res.json();
+                // Parsing respons backend: { success: true, data: rows }
+                if (data.success) {
+                    this.selectedMitra = data.data || [];
+                } else {
+                    console.error("Error from backend:", data.message);
+                    this.selectedMitra = [];
+                }
+            } catch (err) {
+                console.error("Error fetching mitra:", err);
+                this.selectedMitra = [];
+            } finally {
+                this.isLoadingMitra = false;
+                // Buka modal menggunakan Bootstrap JS (pastikan Bootstrap JS sudah di-include)
+                const modal = new bootstrap.Modal(document.getElementById('mitraModal'));
+                modal.show();
+            }
         }
-    } catch (err) {
-        console.error("Error fetching mitra:", err);
-        this.selectedMitra = [];
-    } finally {
-        this.isLoadingMitra = false;
-        // Buka modal menggunakan Bootstrap JS (pastikan Bootstrap JS sudah di-include)
-        const modal = new bootstrap.Modal(document.getElementById('mitraModal'));
-        modal.show();
-    }
-}
 
 
 

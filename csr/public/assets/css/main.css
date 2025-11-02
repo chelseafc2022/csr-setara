@@ -530,7 +530,7 @@ textarea {
 .btn1 {
   user-select: none;
   -moz-user-select: none;
-  background: #609dff none repeat scroll 0 0!important;
+  background: #ef1717 none repeat scroll 0 0!important;
   border: medium none;
   -webkit-border-radius: 10px;
   -moz-border-radius: 10px;
@@ -634,6 +634,10 @@ textarea {
 .btn:hover, .btn:focus-visible {
   color: var(--tg-color-white-default);
   background: var(--tg-theme-secondary-500);
+}
+.btn1:hover, .btn:focus-visible {
+  color: var(--tg-color-white-default);
+  background: var(--tg-theme-secondary-500)!important;
 }
 .btn:hover:before, .btn:focus-visible:before {
   top: -40%;
