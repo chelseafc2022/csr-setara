@@ -123,21 +123,8 @@ app.use('/uploads', express.static(path.join(__dirname, './uploads')))
     app.use('/api/v1/publish/kegiatan_fmCSR', kegiatan_fmCSR);
     const beritaCSR = require('./apiMysql/publish/beritaCSR');
     app.use('/api/v1/publish/beritaCSR', beritaCSR);
-
-
-
     // =================== ENDPUBLISH =====================
 
-
-
-
-
-
-
-
-    
-    
-    
     // ================================== BATAS =====================================================
     
     // >>>>>>> d3108e8369f9f0f379270f0f6f53f5b9ef7abde6

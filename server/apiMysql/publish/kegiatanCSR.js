@@ -147,9 +147,53 @@ router.get('/subBidangCSR', (req, res) => {
   });
 });
 
+router.get('/lihatmitra', (req, res) => {
+  try {
+    const { id: kegiatan_id } = req.query;
+    console.log('Received kegiatan_id:', kegiatan_id);  // Debug log
 
+    if (!kegiatan_id) {
+      return res.status(400).json({ success: false, message: "ID kegiatan tidak boleh kosong" });
+    }
 
+    const checkStatusSql = `SELECT status FROM kegiatan_csr WHERE id = ? LIMIT 1`;
+    db.query(checkStatusSql, [kegiatan_id], (err, statusResult) => {
+      if (err) {
+        console.error('DB Error in checkStatusSql:', err);  // Debug log
+        return res.status(500).json({ success: false, message: "DB Error", error: err });
+      }
+      if (statusResult.length === 0) {
+        console.log('No kegiatan found for id:', kegiatan_id);  // Debug log
+        return res.status(404).json({ success: false, message: "Kegiatan tidak ditemukan" });
+      }
+      if (![2, 3, 4].includes(statusResult[0].status)) {
+        return res.status(403).json({ success: false, message: "Status kegiatan tidak memungkinkan melihat mitra" });
+      }
 
+      const sql = `
+        SELECT 
+          km.jumlah_ambil AS nilai,
+          p.nama AS nama_mitra
+        FROM kegiatan_mitra km
+        LEFT JOIN perusahaan p ON km.perusahaan_id = p.users_id
+        WHERE km.kegiatan_id = ? AND km.status_pengajuan = 2
+        ORDER BY km.createdAt DESC
+      `;
+      db.query(sql, [kegiatan_id], (err, rows) => {
+        if (err) {
+          console.error('DB Error in mitra query:', err);  // Debug log
+          return res.status(500).json({ success: false, message: "DB Error", error: err });
+        }
+        console.log('Mitra data:', rows);  // Debug log
+        res.json({ success: true, data: rows });
+      });
+    });
 
+  } catch (error) {
+    console.error("❌ Server Error:", error);
+    res.status(500).json({ success: false, message: "Server Error", error });
+  }
+});
 
 module.exports = router;
+
