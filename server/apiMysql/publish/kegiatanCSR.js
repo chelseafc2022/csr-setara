@@ -172,10 +172,11 @@ router.get('/lihatmitra', (req, res) => {
 
       const sql = `
         SELECT 
-          km.jumlah_ambil AS nilai,
-          p.nama AS nama_mitra
+          km.jumlah_ambil,
+          p.nama AS nama_mitra, satuan, nilai
         FROM kegiatan_mitra km
         LEFT JOIN perusahaan p ON km.perusahaan_id = p.users_id
+        LEFT JOIN kegiatan_csr kc ON km.kegiatan_id = kc.id
         WHERE km.kegiatan_id = ? AND km.status_pengajuan = 2
         ORDER BY km.createdAt DESC
       `;
