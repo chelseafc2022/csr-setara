@@ -67,6 +67,7 @@
   --tg-theme-secondary-300: #fac254;
   --tg-theme-secondary-400: #f9b633;
   --tg-theme-secondary-500: #f7a400;
+  --tg-theme-secondary-5001:rgb(0, 247, 78)0!important;
   --tg-theme-secondary-600: #e19500;
   --tg-theme-secondary-700: #af7400;
   --tg-theme-secondary-800: #885a00;
@@ -526,6 +527,40 @@ textarea {
   overflow: hidden;
   z-index: 1;
 }
+.btn1 {
+  user-select: none;
+  -moz-user-select: none;
+  background: #609dff none repeat scroll 0 0!important;
+  border: medium none;
+  -webkit-border-radius: 10px;
+  -moz-border-radius: 10px;
+  -o-border-radius: 10px;
+  -ms-border-radius: 10px;
+  border-radius: 10px;
+  color: var(--tg-color-white-default);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: 1;
+  margin-bottom: 0;
+  padding: 18px 24px;
+  text-align: center;
+  text-transform: uppercase;
+  touch-action: manipulation;
+  -webkit-transition: all 0.3s ease-out 0s;
+  -moz-transition: all 0.3s ease-out 0s;
+  -ms-transition: all 0.3s ease-out 0s;
+  -o-transition: all 0.3s ease-out 0s;
+  transition: all 0.3s ease-out 0s;
+  vertical-align: middle;
+  white-space: nowrap;
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+}
 .btn::before {
   content: "";
   position: absolute;
@@ -536,6 +571,28 @@ textarea {
   top: 110%;
   left: 50%;
   background: var(--tg-theme-primary-500);
+  -webkit-transform: translateX(-50%);
+  -moz-transform: translateX(-50%);
+  -ms-transform: translateX(-50%);
+  -o-transform: translateX(-50%);
+  transform: translateX(-50%);
+  -webkit-border-radius: 50%;
+  -moz-border-radius: 50%;
+  -o-border-radius: 50%;
+  -ms-border-radius: 50%;
+  border-radius: 50%;
+  z-index: -1;
+}
+.btn1::before {
+  content: "";
+  position: absolute;
+  -webkit-transition-duration: 800ms;
+  transition-duration: 800ms;
+  width: 200%;
+  height: 200%;
+  top: 110%;
+  left: 50%;
+  background: var(--tg-theme-primary-500)!important;
   -webkit-transform: translateX(-50%);
   -moz-transform: translateX(-50%);
   -ms-transform: translateX(-50%);
@@ -561,6 +618,19 @@ textarea {
   -o-transition: all 0.3s ease-out 0s;
   transition: all 0.3s ease-out 0s;
 }
+/* .btn1::after {
+  content: "\f10a";
+  font-family: flaticon;
+  font-weight: var(--tg-fw-bold);
+  margin-left: 8px;
+  font-size: 20px;
+  line-height: 0;
+  -webkit-transition: all 0.3s ease-out 0s;
+  -moz-transition: all 0.3s ease-out 0s;
+  -ms-transition: all 0.3s ease-out 0s;
+  -o-transition: all 0.3s ease-out 0s;
+  transition: all 0.3s ease-out 0s;
+} */
 .btn:hover, .btn:focus-visible {
   color: var(--tg-color-white-default);
   background: var(--tg-theme-secondary-500);

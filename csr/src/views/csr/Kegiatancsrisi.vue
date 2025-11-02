@@ -104,16 +104,12 @@
                                 <div v-if="csrData" class="card-body d-flex">
                                     <!-- Status -->
                                     <div class="flex-fill me-2">
-                                        <h6 class="title mb-1">Status</h6>
-                                        <span v-if="csrData.status === 1" class="badge text-bg-warning">Program CSR
-                                            Baru</span>
-                                        <span v-else-if="csrData.status === 2" class="badge text-bg-primary">Dalam
-                                            Pengerjaan</span>
-                                        <span v-else-if="csrData.status === 3"
-                                            class="badge text-bg-secondary">Pengerjaan Sebagian</span>
-                                        <span v-else-if="csrData.status === 4"
-                                            class="badge text-bg-success">Selesai</span>
-                                    </div>
+    <h6 class="title mb-1">Status</h6>
+    <span v-if="csrData.status === 1" class="badge text-bg-warning">Program CSR Baru</span>
+    <button v-else-if="csrData.status === 2" @click="viewMitra(csrData.id)" class="badge text-bg-primary">Dalam Pengerjaan</button>
+    <button v-else-if="csrData.status === 3" @click="viewMitra(csrData.id)" class="badge text-bg-secondary">Pengerjaan Sebagian</button>
+    <button v-else-if="csrData.status === 4" @click="viewMitra(csrData.id)" class="badge text-bg-success">Selesai</button>
+</div>
 
                                     <!-- Jumlah Tersedia -->
                                     <div class="flex-fill me-2">
@@ -128,6 +124,12 @@
                                         <input type="text" class="form-control form-control-sm" :value="jumlahTerambil"
                                             disabled>
                                     </div>
+                                </div>
+                                <div v-if="csrData && (csrData.status === 2 || csrData.status === 3 || csrData.status === 4)" class="mt-3">
+                                    <button @click="viewMitra(csrData.id)" class="btn btn-outline-primary btn-sm w-100" 
+                                            style="font-size: 9pt; border-radius: 6px; transition: all 0.3s ease;">
+                                        <i class="fas fa-eye"></i> Lihat Mitra
+                                    </button>
                                 </div>
                             </div>
 
@@ -190,6 +192,39 @@
         </section>
         <!-- blog-area-end -->
 
+        <!-- Modal untuk Lihat Mitra -->
+        <div class="modal fade" id="mitraModal" tabindex="-1" aria-labelledby="mitraModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-md">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="mitraModalLabel">Daftar Mitra/Perusahaan</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div v-if="isLoadingMitra" class="text-center">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="mt-2">Memuat data mitra...</p>
+                        </div>
+                        <div v-else-if="selectedMitra.length === 0" class="text-center text-muted">
+                            <i class="fas fa-info-circle fa-2x"></i>
+                            <p class="mt-2">Tidak ada mitra yang terdaftar untuk kegiatan ini.</p>
+                        </div>
+                        <ul v-else class="list-group">
+                            <li v-for="(mitra, idx) in selectedMitra" :key="idx" class="list-group-item d-flex justify-content-between align-items-center">
+                                <span><strong>{{ mitra.nama_mitra }}</strong></span>
+                                <span class="badge bg-primary">{{ formatRupiah(mitra.nilai) }}</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
 </template>
 
@@ -202,6 +237,9 @@ export default {
         return {
             UMUM: UMUM,
             csrData: null,
+            // Data untuk modal mitra
+            selectedMitra: [],
+            isLoadingMitra: false
 
         }
     },
@@ -254,6 +292,36 @@ export default {
                 default: return '-';
             }
         },
+
+       // Method untuk lihat mitra
+async viewMitra(csrId) {
+    this.isLoadingMitra = true;
+    this.selectedMitra = [];
+    try {
+        // Update endpoint ke "lihatmitra" dengan query string id
+        const res = await fetch(this.$store.state.URL.KEGIATAN_CSR + "lihatmitra?id=" + csrId, {
+            method: "GET",
+            headers: { "Content-Type": "application/json" }
+        });
+        const data = await res.json();
+        // Parsing respons backend: { success: true, data: rows }
+        if (data.success) {
+            this.selectedMitra = data.data || [];
+        } else {
+            console.error("Error from backend:", data.message);
+            this.selectedMitra = [];
+        }
+    } catch (err) {
+        console.error("Error fetching mitra:", err);
+        this.selectedMitra = [];
+    } finally {
+        this.isLoadingMitra = false;
+        // Buka modal menggunakan Bootstrap JS (pastikan Bootstrap JS sudah di-include)
+        const modal = new bootstrap.Modal(document.getElementById('mitraModal'));
+        modal.show();
+    }
+}
+
 
 
 

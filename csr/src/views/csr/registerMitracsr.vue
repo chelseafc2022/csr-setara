@@ -109,14 +109,17 @@
                   </div>
 
                   <div class="mb-3">
-                    <button type="button" class="btn mt-2 mb-3" @click="downloadTemplate"> 📥 Download Format Dokumen</button>
-                    <!-- <label class="form-label">
-                      Upload Dokumen (Wajib, sesuai syarat admin)*
-                    </label> -->
-                    
+                    <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap">
+                      <label class="form-label mb-0">
+                        Upload Dokumen*
+                      </label>
+                      <button type="button" class="btn1 btn-sm" @click="downloadTemplate">
+                        <span style="font-size: 12px;">📥 Download Format Dokumen</span>
+                      </button>
+                    </div>
                     <input type="file" class="form-control" accept="application/pdf" @change="handleFileUpload"
                       required>
-                    <small class="form-text text-muted">Pastikan dokumen sesuai dengan format yang ditentukan.</small>
+                    <small class="form-text text-muted">*Pastikan dokumen sesuai dengan format yang ditentukan.</small>
                   </div>
                 </div>
               </div>
@@ -246,5 +249,12 @@ export default {
 <style scoped>
 .btn::after {
   content: none;
+}
+
+/* Tambahan untuk responsivitas pada mobile */
+@media (max-width: 576px) {
+  .d-flex.justify-content-between.align-items-center.mb-2.flex-wrap .btn {
+    margin-top: 0.5rem; /* Tambahkan margin atas jika wrap */
+  }
 }
 </style>
